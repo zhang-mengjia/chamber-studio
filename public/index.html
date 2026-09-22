@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chamber Studio · 实验箱配置</title><meta name="description" content="直接点击实验箱，配置模块并导出可编辑矢量图"><link rel="icon" href="./favicon.svg"><link rel="stylesheet" href="./style.css"></head>
+<body>
+<header>
+  <div class="brand"><span class="mark">▥</span><div><strong>Chamber Studio</strong><small>模块化实验箱</small></div></div>
+  <div class="project"><input id="name" aria-label="方案名称" maxlength="80"><span id="saved">已保存在本机</span></div>
+  <nav aria-label="文件与编辑"><div class="history"><button id="undo" title="撤销 Ctrl+Z" aria-label="撤销">↶</button><button id="redo" title="重做 Ctrl+Y / Ctrl+Shift+Z" aria-label="重做">↷</button></div><button id="saveConfig" title="保存配置 Ctrl+S">保存配置</button><button id="loadConfig">载入配置</button><button id="exportMenu" class="primary">导出图片 / PPT</button><input id="file" type="file" accept=".json" hidden><select id="language" aria-label="Language / 语言"><option value="zh">中文</option><option value="en">English</option></select></nav>
+</header>
+<main>
+  <div class="preview-toolbar"><div class="switch" id="views"><button data-view="perspective">箱体透视</button><button data-view="front">墙面正视</button><button data-view="combined">布局说明</button></div><div class="tools"><button id="examples">示例</button><button id="ratTool">大鼠</button><button id="floorTool">地板</button><button id="shortcutHelp" title="常用快捷键">快捷键</button><button id="reset" class="quiet">恢复初始布局</button></div></div>
+  <div class="canvas-wrap"><div id="canvas" tabindex="0" aria-label="实验箱编辑画布：点击面板安装模块，拖动设备调整位置"></div><div class="canvas-note" id="canvasNote">点击面板安装模块 · 点击设备修改状态 · 拖动调整位置</div></div>
+  <footer><div class="display-options"><label><input id="labels" type="checkbox">部件名称</label><label><input id="gridToggle" type="checkbox">安装网格</label><label><input id="dimensions" type="checkbox">单位尺寸</label><label><input id="effects" type="checkbox">光晕 / 声波</label></div><span id="totalCount"></span><span class="save-hint">Ctrl+Z 撤销 · Delete 删除</span></footer><div class="project-links"><a href="https://github.com/zhang-mengjia/chamber-studio" target="_blank" rel="noopener">源码与说明</a><span>Chamber Studio 1.0 · MIT · <a href="./assets/ATTRIBUTION.md" target="_blank" rel="noopener">LE rat: zhang-mengjia · CC BY 4.0</a></span></div>
+</main>
+<div id="popover" class="popover" role="dialog" aria-labelledby="popoverTitle" hidden><div class="popover-head"><div><span id="popoverEyebrow"></span><h2 id="popoverTitle"></h2></div><button id="closePopover" aria-label="关闭设置" title="关闭 Esc">×</button></div><div id="popoverBody"></div></div>
+<div id="dragBadge" hidden></div><div id="toast" role="status" aria-live="polite"></div>
+<noscript>This editor needs JavaScript. 请启用 JavaScript。</noscript>
+<script src="./vendor/jszip.min.js"></script><script src="./vendor/pdf-lib.min.js"></script><script type="module" src="./app.js"></script>
+</body></html>

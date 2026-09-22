@@ -1,0 +1,54 @@
+# Chamber Studio · 模块化实验箱绘图工具
+
+**直接点击箱体配置零件，导出仍可编辑的实验示意图。**
+
+[打开在线工具](https://zhang-mengjia.github.io/chamber-studio/) · [English](README.md) · [详细使用说明](docs/guide.zh-CN.md) · [问题反馈](https://github.com/zhang-mengjia/chamber-studio/issues)
+
+![实验箱编辑界面](docs/preview.png)
+
+免费开源，无需注册。左右墙面各为 6 × 8 单位，每面墙由三列宽 2 单位的模块组成。直接点击透视图或墙面正视图，在点击处附近配置模块，拖动即可移动；支持撤销、重做、复制、剪切、粘贴及删除。
+
+## 立即使用
+
+1. 打开在线工具，顶部可切换 **中文 / English**。
+2. 点击空白面板安装模块；点击设备设置状态、食物口味、水量、声波类型等参数。
+3. 点击地板切换金属横杠或多孔透明亚克力；原版 LE 黑白大鼠支持移动、等比缩放、左右翻转及隐藏。
+4. 选择透视、正视或布局说明视图，再导出 **PPT、PDF、PNG**。使用“保存配置”下载可再次载入的 JSON。
+
+“示例”内置双水槽、操作性条件反射、空白箱体三种布局，载入后可撤销。
+
+## 支持的零件
+
+食槽、水槽、喇叭为 2 × 2；鼻戳、压杆、房灯、信号灯、摄像头为 2 × 1。
+
+- 食物：空槽或有食物；谷物、蔗糖、巧克力、香蕉、草莓。
+- 水量：空槽或 10、20、40、80、160 μL。
+- 压杆：伸出 / 缩回。鼻戳和信号灯：开 / 关。
+- 房灯：关闭 / 常亮 / 闪烁，0.2–5 Hz；静态导出用点亮灯体和频率说明。
+- 喇叭：静音 / 播放，支持 Clicker、Siren、White noise、Pure tone 示意。
+- 摄像头：关闭 / 录像。
+
+PPT 使用原生自由曲线和文字，设备按组件组合，可进入或取消组合编辑内部零件；大鼠保留 117 条矢量路径。PDF 为矢量，PNG 可选三档分辨率和透明背景。导出图中的设备标注统一使用英文。
+
+## 离线运行
+
+从仓库 **Code → Download ZIP** 或[发布页](https://github.com/zhang-mengjia/chamber-studio/releases)下载并解压，准备 **Node.js 22 或以上**。
+
+- Windows：双击 `start.cmd` 或 `启动网页.cmd`；运行 `停止服务.ps1` 可停止后台服务。
+- Windows / macOS / Linux：在项目目录打开终端，执行 `npm start`，再访问 **http://127.0.0.1:47831/**。按 Ctrl+C 停止终端服务。
+
+无需 `npm install`、构建或联网。请通过本地服务访问，不要直接双击 `index.html`。建议使用当前版本的 Chrome、Edge、Firefox 或 Safari；桌面浏览器更适合精确编辑。
+
+## 数据与快捷键
+
+配置和导出均在浏览器本地处理，无账号、埋点或配置上传接口。当前配置自动保存在此浏览器中；清除网站数据会删除它，请用“保存配置”备份。在线版与本机版的浏览器存储独立，可用配置文件转移。
+
+支持 Ctrl+Z 撤销、Ctrl+Y / Ctrl+Shift+Z 重做、Delete 删除、Ctrl+C/X/V 复制剪切粘贴、方向键移动、Esc 取消、Ctrl+S 保存配置。macOS 可用 Command 对应 Ctrl。输入框保留文字编辑快捷键。
+
+液面、光晕、食物颜色及声波仅作示意；工具不控制真实实验硬件，也不播放音频。
+
+## 开发与许可证
+
+执行 `npm test` 运行检查；项目无需构建。贡献指南见 [CONTRIBUTING.md](CONTRIBUTING.md)，可用中文或英文反馈问题。
+
+代码与文档采用 **MIT**，署名 **zhang-mengjia**。原版 LE 大鼠单独采用 **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**，署名 **zhang-mengjia**。公开分享包含大鼠的图或改编素材时，请在图注或随附材料中保留作者、来源和许可证链接，并说明改动。参见[素材授权](public/assets/ATTRIBUTION.md)与[第三方许可证说明](THIRD_PARTY_NOTICES.md)。

@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "name": "Dual water wells",
+  "floor": "bars",
+  "effects": true,
+  "walls": {
+    "left": [
+      {
+        "col": 1,
+        "row": 0,
+        "type": "house",
+        "state": "on",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      },
+      {
+        "col": 0,
+        "row": 5,
+        "type": "water",
+        "state": "full",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      },
+      {
+        "col": 2,
+        "row": 5,
+        "type": "water",
+        "state": "full",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 80,
+        "hz": 1
+      }
+    ],
+    "right": [
+      {
+        "col": 1,
+        "row": 0,
+        "type": "speaker",
+        "state": "silent",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      },
+      {
+        "col": 1,
+        "row": 5,
+        "type": "food",
+        "state": "empty",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      }
+    ]
+  },
+  "rat": {
+    "pose": "stand",
+    "facing": "right",
+    "visible": true,
+    "scale": 1,
+    "x": 650,
+    "y": 535
+  },
+  "view": "perspective",
+  "labels": true,
+  "grid": false,
+  "dimensions": false
+}

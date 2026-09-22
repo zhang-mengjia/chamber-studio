@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "name": "Empty chamber",
+  "floor": "bars",
+  "effects": true,
+  "walls": {
+    "left": [],
+    "right": []
+  },
+  "rat": {
+    "pose": "stand",
+    "facing": "right",
+    "visible": false,
+    "scale": 1,
+    "x": 650,
+    "y": 535
+  },
+  "view": "perspective",
+  "labels": true,
+  "grid": false,
+  "dimensions": false
+}
