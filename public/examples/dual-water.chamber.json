@@ -68,7 +68,7 @@
     "y": 535
   },
   "view": "perspective",
-  "labels": true,
+  "labels": false,
   "grid": false,
   "dimensions": false
 }

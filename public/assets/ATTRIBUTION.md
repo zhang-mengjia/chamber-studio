@@ -7,7 +7,7 @@
 - Source: [Chamber Studio](https://github.com/zhang-mengjia/chamber-studio)
 - License: [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
 - Asset: `rat-paths.json`, 117 editable vector paths, supplied and authorized for public distribution by zhang-mengjia.
-- Preparation: converted from the supplied PowerPoint illustration into vector path data. The app preserves its original pose, silhouette and colors; placement uses translation, uniform scaling and optional horizontal reflection.
+- Preparation: converted from the supplied PowerPoint illustration into vector path data. The app preserves the original pose, silhouette and all 117 vector paths. The poster-style adaptation recolors the fur to ivory and charcoal and the skin to coral pink, and adds an editable silhouette outline beneath the original parts. Placement uses translation, uniform scaling and optional horizontal reflection.
 
 The rat artwork is licensed separately from the MIT application code. This license also applies to the rat artwork included in exported PPT, PDF and PNG figures and in screenshots of this application.
 

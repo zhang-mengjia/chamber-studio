@@ -4,7 +4,7 @@
 
 [Open the editor](https://zhang-mengjia.github.io/chamber-studio/) · [中文说明](README.zh-CN.md) · [Report an issue](https://github.com/zhang-mengjia/chamber-studio/issues)
 
-![Chamber Studio with the original LE rat](docs/preview.png)
+![Chamber Studio with a poster-style chamber and LE rat](docs/preview.png)
 
 A free browser tool for arranging modules on two 6 × 8 unit walls and creating experiment schematics. Click directly on the perspective drawing or front walls, choose a module in the nearby popover, and drag to rearrange it. No account, build step or server backend is needed.
 
@@ -30,14 +30,14 @@ Try **Examples** for dual water wells, an operant chamber or an empty chamber. L
 | Speaker | 2 × 2 | Silent / playing; Clicker, Siren, White noise, Pure tone |
 | Camera | 2 × 1 | Off / recording |
 
-Choose metal bars or perforated transparent acrylic for the floor. The original black-and-white Long–Evans rat keeps its original pose; move, scale, mirror or hide it. Perspective, front-wall and combined views share one vector drawing engine.
+Choose metal bars or perforated transparent acrylic for the floor. The black-and-white Long–Evans rat keeps its original pose, with ivory fur, coral skin and stronger outlines; move, scale, mirror or hide it. Blue glass reflections, silver wall panels and shaded metal bars follow the poster illustration style. Perspective, front-wall and combined views share one vector drawing engine, including the editable shading and reflections.
 
-- **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a component to edit its parts. The rat retains 117 vector paths.
+- **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a component to edit its parts. The rat retains 117 source vector paths plus an editable silhouette outline.
 - **PDF:** vector paths and text on a 1280 × 760 point page.
 - **PNG:** 1280 × 760, 2560 × 1520 or 3840 × 2280, optionally transparent.
 - **Configuration:** portable JSON includes modules, parameters, rat, floor and view settings.
 
-Exported diagram labels use English in both interface languages. A flashing lamp exports as a lit lamp with a frequency label. Front-wall views omit the rat and floor. Water levels, food colors, light halos and sound waves are schematic; this tool does not control hardware or play audio.
+Figures omit device labels, including water amounts, food flavors, sound names and flashing frequencies. Click a device to inspect its settings; configuration files retain these parameters. Older configurations with labels enabled also render without device text. A flashing lamp exports as a lit lamp. Front-wall views omit the rat and floor. Water levels, food colors, light halos and sound waves are schematic; this tool does not control hardware or play audio.
 
 ## Shortcuts
 
@@ -77,4 +77,4 @@ Run `npm test`. There is no build step. Static files live in `public/`; `server.
 
 Code and documentation: **MIT**, copyright 2026 [zhang-mengjia](https://github.com/zhang-mengjia).
 
-Original LE rat artwork: **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**, credit **zhang-mengjia**. When sharing figures that include the rat, retain its credit, source and license link in the caption or accompanying material, and indicate modifications. See [artwork attribution](public/assets/ATTRIBUTION.md) and [third-party notices](THIRD_PARTY_NOTICES.md). The rat's separate license also applies to its appearance in screenshots and exports.
+Original LE rat artwork and its poster-style adaptation: **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**, credit **zhang-mengjia**. When sharing figures that include the rat, retain its credit, source and license link in the caption or accompanying material, and indicate modifications. See [artwork attribution](public/assets/ATTRIBUTION.md) and [third-party notices](THIRD_PARTY_NOTICES.md). The rat's separate license also applies to its appearance in screenshots and exports.

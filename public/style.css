@@ -10,3 +10,13 @@
 .example-button{display:block;width:100%;text-align:left;margin:8px 0}
 @media(max-width:1000px){header{flex-wrap:wrap}nav{flex-wrap:wrap}.preview-toolbar{flex-wrap:wrap}.tools{flex-wrap:wrap}}
 @media(max-width:760px){.canvas-note{white-space:normal;text-align:center;width:max-content;max-width:94%}.project-links{font-size:10px}.tools .quiet{margin-left:0}.display-options{gap:10px}nav{justify-content:flex-start}.keys{font-size:11px}.keys td:first-child{white-space:normal}}
+
+/* Cool glass and silver framing echo the chamber's poster illustration. */
+:root{color:#2d435a;background:#eef5fc;--line:#d3e0ed;--muted:#71869b;--blue:#357cad}
+header{border-bottom-color:#cdddea}.mark{background:#487ba5;color:#ecf7ff}
+.primary{background:#397bac;border-color:#397bac}.primary:hover{background:#2a638e}
+button:hover{background:#f0f7ff;border-color:#9abfdd}
+.switch{background:#e0ebf6}.switch .active{color:#2e709f}
+.canvas-wrap{background:#fcfdff;border-color:#c7dbee;box-shadow:0 6px 28px #416a910a}
+.canvas-wrap:before{background-image:radial-gradient(#a6c6e52b .7px,transparent .7px)}
+.popover{border-color:#c5d9eb}.modules .active,.poses .active,.floor-options .active{border-color:#7babd0;background:#eef7ff}
