@@ -1,0 +1,1166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chamber Studio version 1 configuration",
+  "description": "Zero-based cells: columns 0–2, rows 0–7. Two-row modules occupy their anchor and the row below. Overlaps are rejected at runtime. Legacy rat poses normalize to stand; labels normalize to false.",
+  "type": "object",
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "floor": {
+      "type": "string",
+      "enum": [
+        "bars",
+        "acrylic"
+      ]
+    },
+    "view": {
+      "type": "string",
+      "enum": [
+        "perspective",
+        "front",
+        "combined"
+      ]
+    },
+    "grid": {
+      "type": "boolean"
+    },
+    "dimensions": {
+      "type": "boolean"
+    },
+    "effects": {
+      "type": "boolean"
+    },
+    "rat": {
+      "type": "object",
+      "properties": {
+        "pose": {
+          "type": "string",
+          "enum": [
+            "stand",
+            "walk",
+            "rear",
+            "nose",
+            "press",
+            "eat"
+          ]
+        },
+        "facing": {
+          "type": "string",
+          "enum": [
+            "left",
+            "right"
+          ]
+        },
+        "visible": {
+          "type": "boolean"
+        },
+        "scale": {
+          "type": "number",
+          "minimum": 0.45,
+          "maximum": 1.7
+        },
+        "x": {
+          "type": "number",
+          "minimum": 200,
+          "maximum": 1050
+        },
+        "y": {
+          "type": "number",
+          "minimum": 250,
+          "maximum": 660
+        }
+      },
+      "required": [
+        "pose",
+        "facing",
+        "scale",
+        "x",
+        "y"
+      ],
+      "additionalProperties": false
+    },
+    "labels": {
+      "type": "boolean"
+    },
+    "walls": {
+      "type": "object",
+      "properties": {
+        "left": {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  },
+                  "type": {
+                    "const": "food"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "empty",
+                      "full"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  },
+                  "type": {
+                    "const": "water"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "empty",
+                      "full"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "nose"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "on"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "lever"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "extended",
+                      "retracted"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "house"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "on",
+                      "flashing"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "cue"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "on"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  },
+                  "type": {
+                    "const": "speaker"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "silent",
+                      "playing"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "camera"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "recording"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "right": {
+          "type": "array",
+          "maxItems": 24,
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  },
+                  "type": {
+                    "const": "food"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "empty",
+                      "full"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  },
+                  "type": {
+                    "const": "water"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "empty",
+                      "full"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "nose"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "on"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "lever"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "extended",
+                      "retracted"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "house"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "on",
+                      "flashing"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "cue"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "on"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 6
+                  },
+                  "type": {
+                    "const": "speaker"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "silent",
+                      "playing"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "col": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 2
+                  },
+                  "row": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "type": {
+                    "const": "camera"
+                  },
+                  "state": {
+                    "type": "string",
+                    "enum": [
+                      "off",
+                      "recording"
+                    ]
+                  },
+                  "flavor": {
+                    "type": "string",
+                    "enum": [
+                      "grain",
+                      "sucrose",
+                      "chocolate",
+                      "banana",
+                      "strawberry"
+                    ]
+                  },
+                  "volume": {
+                    "type": "integer",
+                    "enum": [
+                      10,
+                      20,
+                      40,
+                      80,
+                      160
+                    ]
+                  },
+                  "hz": {
+                    "type": "number",
+                    "minimum": 0.2,
+                    "maximum": 5
+                  },
+                  "sound": {
+                    "type": "string",
+                    "enum": [
+                      "clicker",
+                      "siren",
+                      "white",
+                      "pure"
+                    ]
+                  }
+                },
+                "required": [
+                  "col",
+                  "row",
+                  "type"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "left",
+        "right"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "version",
+    "walls",
+    "rat"
+  ],
+  "additionalProperties": false
+}

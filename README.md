@@ -54,6 +54,18 @@ Figures omit device labels, including water amounts, food flavors, sound names a
 
 Select a destination panel before pasting. Occupied positions are protected. Text inputs keep their native shortcuts. Undo retains up to 60 steps until the page is reloaded.
 
+## AI access
+
+AI agents can read and edit layouts, undo changes and export JSON, SVG, PNG, PDF or editable PPTX through the versioned browser API:
+
+```js
+await window.chamberStudio.callTool('chamber_get_state', {});
+```
+
+Open the [agent console](https://zhang-mengjia.github.io/chamber-studio/ai.html) for a browser form that accepts JSON tool arguments and shows the current figure. The same eight tools register with WebMCP when the browser provides it; the browser API and console also work without WebMCP.
+
+See the [API guide](public/api/README.md), [public manifest](https://zhang-mengjia.github.io/chamber-studio/api/manifest.json), [configuration schema](public/api/config.schema.json) and [Agent Skill](public/skills/chamber-studio/SKILL.md). AI discovery starts at [llms.txt](https://zhang-mengjia.github.io/chamber-studio/llms.txt). To install the skill, copy the whole `public/skills/chamber-studio/` directory into your agent's skill directory. HTTP serves static discovery files; executing tools requires an open browser page. All layout changes remain in that browser's local storage.
+
 ## Run offline
 
 Download the repository ZIP from **Code → Download ZIP** or the [release page](https://github.com/zhang-mengjia/chamber-studio/releases), then extract it. Install [Node.js](https://nodejs.org/) **22 or later** once.

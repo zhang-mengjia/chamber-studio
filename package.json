@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "agent:manifest": "node scripts/update-agent-manifest.mjs"
   },
   "engines": {
     "node": ">=22"

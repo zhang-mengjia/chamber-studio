@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chamber Studio · AI 接口 / Agent API</title>
+  <meta name="description" content="AI tools for reading, editing and exporting behavioral chamber figures.">
+  <link rel="icon" href="./favicon.svg"><link rel="stylesheet" href="./agent-console.css">
+  <link rel="alternate" type="text/plain" href="./llms.txt" title="AI discovery">
+</head>
+<body>
+  <header><a class="brand" href="./">Chamber Studio</a><a href="./">返回绘图 / Open editor →</a></header>
+  <main>
+    <h1>AI 接口 <span>/ Agent API</span></h1>
+    <p>读取实验箱、批量修改布局、导出可编辑图。所有操作在当前浏览器中完成，修改可撤销。<br>Read, edit and export a chamber in this browser. Layout changes are undoable.</p>
+    <nav aria-label="Interface documentation">
+      <a href="./api/README.md">接口文档 / API guide</a>
+      <a href="./api/manifest.json">工具协议 / Manifest</a>
+      <a href="./api/config.schema.json">JSON Schema</a>
+      <a href="./skills/chamber-studio/SKILL.md">SKILL.md</a>
+      <a href="./llms.txt">llms.txt</a>
+    </nav>
+    <p class="note">浏览器 API：<code>await window.chamberStudio.callTool(name, arguments)</code>。支持 WebMCP 的浏览器自动注册工具；此控制台也可通过表单操作。HTTP 提供静态文档，执行工具需要浏览器页面。<br>Use the browser API, optional WebMCP, or the form below. HTTP serves discovery files; tool execution requires a browser page.</p>
+    <div class="workspace">
+      <section class="console" aria-label="Agent tool console">
+        <h2>执行工具 / Run a tool</h2>
+        <form id="agentForm">
+          <label for="tool">工具 / Tool</label><select id="tool" disabled></select>
+          <p id="toolDescription" class="description"></p>
+          <label for="arguments">参数 JSON / Arguments JSON</label>
+          <textarea id="arguments" spellcheck="false" maxlength="1048576">{}</textarea>
+          <p class="note">列 0–2、行 0–7，从左上角起算。/ Columns 0–2, rows 0–7, from the top left.</p>
+          <button id="execute" type="submit" disabled>执行 / Execute</button>
+        </form>
+        <p id="status" role="status" aria-live="polite">正在载入编辑器 / Loading editor…</p>
+        <label for="result">结果 JSON / Result JSON</label><textarea id="result" readonly spellcheck="false" aria-label="Result JSON"></textarea>
+        <details><summary>参数格式 / Input schema</summary><pre id="schema"></pre></details>
+      </section>
+      <section class="preview" aria-label="Chamber preview"><h2>当前实验箱 / Current chamber</h2><iframe id="editor" src="./" title="Chamber Studio editor"></iframe></section>
+    </div>
+  </main>
+  <noscript>JavaScript is required. 请启用 JavaScript。</noscript>
+  <script type="module" src="./agent-console.js"></script>
+</body>
+</html>

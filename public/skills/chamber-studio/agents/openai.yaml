@@ -1,0 +1,4 @@
+interface:
+  display_name: "Chamber Studio"
+  short_description: "Draw and export behavioral chamber figures"
+  default_prompt: "Use $chamber-studio to create a behavioral chamber figure and export an editable PowerPoint."

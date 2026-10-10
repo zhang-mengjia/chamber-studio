@@ -30,6 +30,18 @@
 
 PPT 使用原生自由曲线和文字，设备按组件组合，可进入或取消组合编辑内部零件；大鼠保留 117 条原始矢量路径，并新增一条可编辑的整体轮廓。PDF 为矢量，PNG 可选三档分辨率和透明背景。绘图和导出均不显示部件文字标注，包括水量、食物口味、声音名称和闪烁频率；点击部件仍可查看和调整参数，配置文件保留这些设置。旧配置即使启用了文字标注，也按无部件标注方式绘制。玻璃反光与金属高光也使用可编辑矢量形状。
 
+## AI 访问
+
+AI 可通过带版本号的浏览器接口读取实验箱、批量修改布局、撤销重做，并导出 JSON、SVG、PNG、PDF 或原生可编辑的 PPTX：
+
+```js
+await window.chamberStudio.callTool('chamber_get_state', {});
+```
+
+[AI 接口控制台](https://zhang-mengjia.github.io/chamber-studio/ai.html)提供可直接填写 JSON 的工具表单与实验箱预览，不需要通过坐标点击绘制。浏览器提供 WebMCP 时会自动注册同样的八个工具；普通浏览器仍可使用 JavaScript 接口或控制台。
+
+详细调用方式见[接口文档](public/api/README.md)，工具和参数可从[公开 manifest](https://zhang-mengjia.github.io/chamber-studio/api/manifest.json)、[配置 schema](public/api/config.schema.json)及 [llms.txt](https://zhang-mengjia.github.io/chamber-studio/llms.txt)读取。[标准 SKILL.md](public/skills/chamber-studio/SKILL.md)随项目提供，可将整个 `public/skills/chamber-studio/` 目录复制到 AI 的 skill 目录。HTTP 提供静态文档；执行工具需要打开浏览器页面，操作保存在当前浏览器中。
+
 ## 离线运行
 
 从仓库 **Code → Download ZIP** 或[发布页](https://github.com/zhang-mengjia/chamber-studio/releases)下载并解压，准备 **Node.js 22 或以上**。

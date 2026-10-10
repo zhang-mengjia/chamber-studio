@@ -5,6 +5,7 @@ import {ratScene} from './rat-art.js';
 import {wallRegions,contains} from './geometry.js';
 import {insertModule,UndoHistory} from './editor.js';
 import {download,pptxBlob,pdfBlob,pngBlob} from './export.js';
+import {createAgentAPI,registerWebMCP} from './agent.js';
 
 const $=id=>document.getElementById(id), KEY='chamber-studio-v1';
 let state=initial(),selected=null,scene=[],clipboard=null,drag=null,draft=null,popup=null,toastTimer,scaleStart=null;
@@ -19,7 +20,7 @@ function commit(next,nextSelected=selected){if(JSON.stringify(next)===JSON.strin
 function change(fn){const next=structuredClone(state);fn(next);commit(next);}
 function chosen(){return selected?.kind==='wall'?occupant(state.walls[selected.wall],selected.col,selected.row):null;}
 function normalizeSelection(){if(selected?.kind==='wall'){const m=chosen();if(m)selected={...selected,row:m.row};}if(selected?.kind==='rat'&&!state.rat.visible)selected=null;}
-function restore(direction){cancelDrag();const result=history[direction](snapshot());if(!result)return;state=result.state;selected=result.selected;normalizeSelection();persist();render();}
+function restore(direction){cancelDrag();const result=history[direction](snapshot());if(!result)return false;state=result.state;selected=result.selected;normalizeSelection();persist();render();return true;}
 function closePopup(clear=false){popup=null;$('popover').hidden=true;if(clear){selected=null;renderPreview();}}
 function openPopup(kind,x,y){popup={kind,x,y};renderPopup();}
 function placePopup(){if(!popup)return;const el=$('popover'),gap=14,w=el.offsetWidth,h=el.offsetHeight;let x=popup.x+gap,y=popup.y-22;if(x+w>innerWidth-12)x=popup.x-w-gap;el.style.left=Math.max(10,Math.min(x,innerWidth-w-10))+'px';el.style.top=Math.max(12,Math.min(y,innerHeight-h-12))+'px';}
@@ -121,5 +122,7 @@ window.chamber={getState:()=>structuredClone(state),getScene:()=>structuredClone
 $('language').value=getLanguage();
 $('language').onchange=()=>{cancelDrag();setLanguage($('language').value);translateStatic();persist();render();};
 render();
+window.chamberStudio=createAgentAPI({getState:()=>state,setState:next=>{cancelDrag();closePopup();commit(next,null);},undo:()=>restore('undo'),redo:()=>restore('redo')});
+window.chamberStudioWebMCP=registerWebMCP(window.chamberStudio,document.modelContext||navigator.modelContext);
 let flashPhase='';
 setInterval(()=>{if(document.hidden||drag||draft)return;const phase=[...state.walls.left,...state.walls.right].filter(m=>m.type==='house'&&m.state==='flashing').map(m=>Date.now()%(1000/options(m).hz)>500/options(m).hz?'0':'1').join('');if(phase!==flashPhase){flashPhase=phase;renderPreview();}},60);

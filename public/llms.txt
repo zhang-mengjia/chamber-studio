@@ -1,0 +1,28 @@
+# Chamber Studio
+
+> A public browser editor for modular behavioral chamber figures. AI agents can read configurations, edit modules in atomic undoable batches, and export JSON, SVG, PNG, PDF or editable PowerPoint.
+
+## Entry points
+
+- [Editor](https://zhang-mengjia.github.io/chamber-studio/): open this page to use window.chamberStudio; wait for its apiVersion property.
+- [Agent console](https://zhang-mengjia.github.io/chamber-studio/ai.html): select a tool, enter JSON arguments, execute, and read Result JSON through ordinary browser controls.
+- [API guide](https://zhang-mengjia.github.io/chamber-studio/api/README.md): browser API, Playwright example, response format, errors and export retrieval.
+- [Manifest](https://zhang-mengjia.github.io/chamber-studio/api/manifest.json): version, tools with complete input schemas, module catalog and geometry limits.
+- [Configuration schema](https://zhang-mengjia.github.io/chamber-studio/api/config.schema.json): portable chamber JSON schema.
+- [Agent Skill](https://zhang-mengjia.github.io/chamber-studio/skills/chamber-studio/SKILL.md): reusable instructions for creating and editing chamber figures.
+
+## Execution
+
+On an open editor page call await window.chamberStudio.callTool(name, arguments).
+The eight tools use the chamber_ prefix. Read chamber_get_capabilities and chamber_get_state before editing.
+Coordinates are zero-based: left/right walls, columns 0–2, rows 0–7 from the top left.
+Adding never replaces an occupied module. Every batch is one undo step and fails without changing the configuration if any operation is invalid.
+Tool results have {ok, apiVersion, result} or {ok:false, apiVersion, error:{code,message}}.
+Exports return {filename,mimeType,size,format,encoding:"base64",data,attribution}; use download:true for a browser download instead.
+All changes are local to the current browser and are saved in its local storage.
+HTTP access is GET-only discovery; there is no remote POST API or hosted MCP server.
+When a browser provides WebMCP, the editor registers the same tools using document.modelContext, with navigator.modelContext compatibility fallback. Browser API and the console do not require WebMCP.
+
+## Artwork
+
+- [Attribution](https://zhang-mengjia.github.io/chamber-studio/assets/ATTRIBUTION.md): LE rat artwork is by zhang-mengjia under CC BY 4.0; preserve credit when sharing a figure containing the rat.

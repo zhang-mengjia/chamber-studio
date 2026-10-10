@@ -14,6 +14,9 @@ Bug reports, documentation improvements and pull requests are welcome. You can w
 - `public/editor.js`: atomic moves/copies and undo history.
 - `public/scene.js`: shared vector drawing for the browser and every export.
 - `public/app.js`: canvas interaction and nearby popovers.
+- `public/agent.js` / `public/agent-contract.js`: versioned agent tools, argument schemas and optional WebMCP registration.
+- `public/ai.html` / `public/agent-console.js`: browser form for invoking agent tools and inspecting the shared editor.
+- `public/api/`, `public/llms.txt`, `public/skills/chamber-studio/`: public discovery, API guide and reusable Agent Skill.
 - `public/i18n.js`: Chinese/English interface strings; configuration keys stay language-neutral.
 - `public/export.js`: editable DrawingML, vector PDF and raster PNG.
 - `public/rat-art.js` / `public/assets/rat-paths.json`: original LE artwork and its placement.
@@ -24,3 +27,5 @@ Keep the direct canvas interaction and native editable PPT geometry. When changi
 New UI text needs Chinese and English translations. Keep user-entered names and loaded configuration data intact when switching languages. Test both desktop and narrow screens. Configuration changes must preserve loading of version 1 files or document an explicit migration.
 
 Changes to `main` run tests before deploying `public/` to GitHub Pages. For a fork, enable Pages with GitHub Actions in repository Settings and update project/attribution URLs as appropriate; do not replace the original rat author credit.
+
+After changing the agent contract, run `npm run agent:manifest` to refresh the committed HTTP manifest and configuration schema, then `npm test`. Tests check that these static files match the runtime contract. The site still requires no build step. Verify agent edits share undo/autosave with the UI, reject collisions without partial changes, and export valid files. Preserve the existing `window.chamber` API when updating the public `window.chamberStudio` interface.
