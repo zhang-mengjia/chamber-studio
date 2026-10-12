@@ -25,6 +25,22 @@ test('hit regions cover all 48 cells in both views, with two-row modules selecte
 });
 test('original LE rat retains every source curve and old pose settings migrate without losing modules',()=>{const parts=ratDrawing();assert.equal(parts.length,117);assert.ok(parts.every(p=>p.ops.every(o=>o.v.every(Number.isFinite))));for(const pose of ['stand','walk','rear','nose','press','eat']){const s=initial();s.rat.pose=pose;s.walls.left[1].volume=160;const next=validate(s);assert.equal(next.rat.pose,'stand');assert.equal(next.walls.left[1].volume,160);}});
 test('static exports contain no editor hit areas or selection outlines',()=>{const s=initial();for(const view of ['perspective','front','combined']){s.view=view;assert.ok(buildScene(s,[]).every(p=>p.fill!=='transparent'&&!p.owner?.includes('selection')));}});
+test('wall devices stay in front of the inner frame and behind the outer frame and rat',()=>{
+ for(const view of ['perspective','combined'])for(const type of Object.keys(MODULES))for(const status of Object.keys(STATES[type]))for(const preview of [false,true]){
+  const s=initial();s.view=view;s.walls={left:[{type,col:1,row:0,state:status}],right:[{type,col:1,row:0,state:status}]};
+  const scene=buildScene(s,[],preview),outer=scene.findIndex(p=>p.owner==='Box outer frame');
+  const inner=scene.slice(0,outer),frameEnd=inner.findLastIndex(p=>p.owner==='Box frame');
+  const devices=inner.flatMap((p,i)=>/^(left|right) .* column \d+ row \d+$/.test(p.owner)?[i]:[]);
+  assert.ok(frameEnd>=0&&devices.length>0);
+  assert.ok(devices.every(i=>i>frameEnd),`${view}: ${type} ${status} was covered by the inner frame`);
+  for(const side of ['left','right']){
+   const indices=inner.flatMap((p,i)=>p.owner.startsWith(side+' ')&&/ column \d+ row \d+$/.test(p.owner)?[i]:[]);
+   assert.equal(indices.at(-1)-indices[0]+1,indices.length,'Each editable device must remain one contiguous group');
+  }
+  assert.ok(scene.findIndex(p=>p.owner==='Rat')>outer);
+  if(view==='perspective')assert.deepEqual(sceneBounds(scene),CHAMBER.bounds);
+ }
+});
 test('perspective chamber has straight square outer edges and a tight export viewport',()=>{
  for(const floor of ['bars','acrylic'])for(const visible of [false,true]){
   const s=initial();s.floor=floor;s.rat.visible=visible;

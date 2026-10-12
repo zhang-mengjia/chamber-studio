@@ -90,7 +90,7 @@ export function buildScene(state,ratPaths,preview=false){
     for(const u of [.016,.984])line(xy(u,.018),xy(u,.982),'#f1faff',1.5);
   }
 
-  function wall(corners,side){
+  function wall(corners,side,devices=null){
     const xy=(u,v)=>wallPoint(corners,u,v);
     const points=(x,y,w,h)=>[[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(([u,v])=>xy(u/6,v/8));
     const rect=(x,y,w,h,fill,stroke='#566a7d',sw=1)=>poly(points(x,y,w,h),fill,stroke,sw);
@@ -118,6 +118,7 @@ export function buildScene(state,ratPaths,preview=false){
     if(state.grid){owner='Grid';for(let r=1;r<8;r++)line(xy(0,r/8),xy(1,r/8),'#7798b7',.7);}
 
     for(const m of state.walls[side]){
+      const start=scene.length;
       const def=MODULES[m.type],x=m.col*2,y=m.row,h=def.h,actual=m.state??defaultState(m.type),opt=options(m);
       const ms=actual==='flashing'?(preview&&Date.now()%(1000/opt.hz)>500/opt.hz?'off':'on'):actual;
       owner=side+' '+def.en+' column '+(m.col+1)+' row '+(m.row+1);
@@ -216,6 +217,7 @@ export function buildScene(state,ratPaths,preview=false){
         }
       }
       // Device settings live in the popover and config, never on the figure.
+      if(devices)devices.push(...scene.splice(start));
     }
     owner=side+' wall fasteners';
     for(const u of [.11,5.89])for(const v of [.65,3.75,7.52]){
@@ -250,7 +252,8 @@ export function buildScene(state,ratPaths,preview=false){
   function perspective(){
     owner='Box glass ceiling';glass(CHAMBER.ceiling,'#bdddf9','#d4edff',true);
     owner='Box glass back';glass(CHAMBER.back,'#c5e2fc','#e3f4ff');
-    floor();wall(WALLS.perspective.left,'left');wall(WALLS.perspective.right,'right');
+    const devices=[];
+    floor();wall(WALLS.perspective.left,'left',devices);wall(WALLS.perspective.right,'right',devices);
     owner='Box frame';
     const [tl,tr,br,bl]=CHAMBER.ceiling,[,,backRight,backLeft]=CHAMBER.back;
     for(const [a,b]of [[tl,tr],[tl,bl],[br,tr],[bl,br],[bl,backLeft],[br,backRight],[tl,CHAMBER.sill[0]],[tr,CHAMBER.sill[1]]]){
@@ -262,6 +265,9 @@ export function buildScene(state,ratPaths,preview=false){
       ellipse(x,y,3.1,3.1,'#5a768f','#334f69',.9);ellipse(x-.6,y-.8,1.15,1.1,'#d9edfb','none',0);
     }
     for(const x of [355,925])ellipse(x,650,4.7,4.7,'#718da6','#3b536b',1.1);
+    // Wall-mounted devices project into the chamber, in front of its inner rails.
+    // Keep each device contiguous so editable PowerPoint grouping is preserved.
+    scene.push(...devices);
     // Filled, axis-aligned rails give every export an exact square outer edge.
     owner='Box outer frame';const {x,y,width,height}=CHAMBER.bounds;
     const frame=(inset,thickness,fill)=>{
