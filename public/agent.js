@@ -1,8 +1,8 @@
 import {MODULES, STATES, validate, occupant, defaultState} from './model.js';
 import {insertModule} from './editor.js';
 import {API_VERSION, TOOLS, manifest} from './agent-contract.js';
-import {buildScene, sceneToSVG} from './scene.js';
-import {download, pptxBlob, pdfBlob, pngBlob} from './export.js';
+import {buildScene} from './scene.js';
+import {download, pptxBlob, pdfBlob, pngBlob, svgBlob} from './export.js';
 
 class AgentError extends Error {
   constructor(code, message) { super(message); this.code = code; }
@@ -88,7 +88,7 @@ export async function exportArtifact(state, {format, scale = 2, transparent = tr
   const scene = format === 'json' ? null : buildScene(state, []);
   let blob;
   if (format === 'json') blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
-  else if (format === 'svg') blob = new Blob([sceneToSVG(scene,transparent)], {type:'image/svg+xml'});
+  else if (format === 'svg') blob = await svgBlob(scene,transparent);
   else if (format === 'png') blob = await pngBlob(scene,scale,transparent);
   else if (format === 'pdf') blob = await pdfBlob(scene);
   else blob = await pptxBlob(scene);

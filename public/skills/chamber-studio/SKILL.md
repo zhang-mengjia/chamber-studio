@@ -25,13 +25,13 @@ Read `chamber_get_capabilities` and `chamber_get_state` before editing. For a ne
 
 Use `chamber_apply_operations` for additions, updates, moves, removals and settings. A batch is one undo step and fails without changing the chamber if any operation is invalid. Check `ok` in every response; use its error code and message to correct the request.
 
-Positions are **zero-based**: `wall` is `left` or `right`, `col` is 0–2, `row` is 0–7, starting at the top left. Food, water and speaker require two consecutive rows, so their anchor cannot be row 7. Adding never overwrites existing modules; replace with remove + add in one batch. Rat x is 200–1050, y is 250–660, scale is 0.45–1.7. Current rat pose is `stand`; view is `perspective`, `front` or `combined`.
+Positions are **zero-based**: `wall` is `left` or `right`, `col` is 0–2, `row` is 0–7, starting at the top left. Food, water and speaker require two consecutive rows, so their anchor cannot be row 7. Adding never overwrites existing modules; replace with remove + add in one batch. Rat x is 200–1050, y is 250–660, scale is 0.45–1.7. Rat poses are `stand` (standing), `walk` (walking), `rear` (rearing), `nose` (sniffing) and `sit` (sitting); view is `perspective`, `front` or `combined`.
 
 After editing, read the resulting state and inspect the figure in the editor. Use `chamber_undo` or `chamber_redo` when needed. These operations and normal UI edits share history and browser-local autosave.
 
 ## Deliver files
 
-Call `chamber_export` with the requested `format`: `json`, `svg`, `png`, `pdf` or `pptx`. Prefer PPTX when native editable shapes are required. PNG supports `scale` 1, 2 or 3 and `transparent`; SVG also supports `transparent`.
+Call `chamber_export` with the requested `format`: `json`, `svg`, `png`, `pdf` or `pptx`. Prefer PPTX when native editable chamber shapes are required. The rat uses the supplied transparent PNG pose, embedded as a movable, resizable, replaceable picture; its internal artwork is raster. SVG/PDF retain vector chamber geometry and embed the original rat PNG. Exported SVG includes image bytes for standalone use. PNG supports `scale` 1, 2 or 3 and `transparent`; SVG also supports `transparent`.
 
 The default response contains base64 `data`, `filename`, `mimeType`, `size` and `attribution`. Decode the file and verify it before delivery. For a browser download, pass `download:true` and await or verify the saved file through available browser tools. The console's export default uses this mode.
 

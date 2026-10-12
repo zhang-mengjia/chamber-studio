@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {initial,place,validate,occupant,STATES,defaultState,MODULES} from '../public/model.js';
+import {initial,place,validate,occupant,STATES,defaultState,MODULES,POSES,LEGACY_POSES} from '../public/model.js';
 import {buildScene,sceneBounds,sceneToSVG} from '../public/scene.js';
 import {insertModule,UndoHistory} from '../public/editor.js';
 import {CHAMBER,WALLS,wallRegions,contains} from '../public/geometry.js';
-import {ratDrawing} from '../public/rat-art.js';
+import {ratScene} from '../public/rat-art.js';
+import assets from '../public/assets/rats/poses.json' with {type:'json'};
 test('two-row modules reject overflow and collision without changing the original',()=>{let s=initial();const before=JSON.stringify(s);assert.throws(()=>place(s,'left',1,7,'food'),/超出/);assert.throws(()=>place(s,'left',0,4,'speaker'),/占用/);assert.equal(JSON.stringify(s),before);});
 test('clicking lower half replaces or removes the entire module',()=>{let s=initial();s=place(s,'left',0,6,'nose');assert.equal(occupant(s.walls.left,0,5).type,'nose');assert.equal(occupant(s.walls.left,0,6),undefined);s=place(s,'left',0,5,'blank');assert.equal(occupant(s.walls.left,0,5),undefined);});
 test('all eight module types fit expected units and preserve states and options in configuration',()=>{let s=initial();s.walls={left:[],right:[]};let row=0;for(const type of Object.keys(MODULES)){const side=row>=8?'right':'left';const r=row>=8?row-8:row;s=place(s,side,0,r,type);row+=MODULES[type].h;}s.walls.left[0].flavor='strawberry';s.walls.left[1].volume=160;s.floor='acrylic';const next=validate(JSON.parse(JSON.stringify(s)));assert.equal(next.floor,'acrylic');assert.equal(next.walls.left[0].flavor,'strawberry');assert.equal(next.walls.left[1].volume,160);assert.equal(next.walls.right.at(-1).type,'camera');});
@@ -23,7 +24,36 @@ test('undo and redo retain independent snapshots and discard redo after a new ed
 test('hit regions cover all 48 cells in both views, with two-row modules selected as one',()=>{
  for(const view of ['perspective','front','combined']){const s=initial();s.view=view;const panels=view==='combined'?2:1;const cells=wallRegions(s,true);assert.equal(cells.length,48*panels);for(const r of cells){const p={x:r.points.reduce((s,p)=>s+p[0],0)/4,y:r.points.reduce((s,p)=>s+p[1],0)/4};assert.ok(contains(r.points,p));}assert.equal(wallRegions(s).filter(r=>r.wall==='left'&&r.col===0&&r.row===5)[0].h,2);}
 });
-test('original LE rat retains every source curve and old pose settings migrate without losing modules',()=>{const parts=ratDrawing();assert.equal(parts.length,117);assert.ok(parts.every(p=>p.ops.every(o=>o.v.every(Number.isFinite))));for(const pose of ['stand','walk','rear','nose','press','eat']){const s=initial();s.rat.pose=pose;s.walls.left[1].volume=160;const next=validate(s);assert.equal(next.rat.pose,'stand');assert.equal(next.walls.left[1].volume,160);}});
+test('all five rat poses survive configuration round-trips and legacy poses migrate without losing modules',()=>{
+ assert.equal(Object.keys(POSES).length,5);assert.deepEqual(Object.keys(assets),Object.keys(POSES));
+ for(const pose of [...Object.keys(POSES),...LEGACY_POSES]){
+  const s=initial();s.rat.pose=pose;s.walls.left[1].volume=160;
+  const next=validate(JSON.parse(JSON.stringify(s)));
+  assert.equal(next.rat.pose,LEGACY_POSES.includes(pose)?'stand':pose);
+  assert.equal(next.walls.left[1].volume,160);
+ }
+ const invalid=initial();invalid.rat.pose='missing';assert.throws(()=>validate(invalid),/素材/);
+});
+test('pose changes share a floor anchor, mirror hit targets and retain finite geometry in both rat views',()=>{
+ for(const pose of Object.keys(POSES))for(const scale of [.45,1,1.7]){
+  const r={...initial().rat,pose,scale},a=ratScene(r)[0],b=ratScene({...r,facing:'left'})[0];
+  const asset=assets[pose],k=a.width/asset.crop.width;
+  assert.ok(Math.abs(a.y+(asset.feetY-asset.crop.y)*k-(r.y+35*scale))<1e-9);
+  assert.deepEqual(sceneBounds([a]),sceneBounds([b]));assert.equal(b.flip,true);
+  for(let i=0;i<a.hitOps.length-1;i++){
+   assert.ok(Math.abs(a.hitOps[i].v[0]+b.hitOps[i].v[0]-2*r.x)<1e-9);
+   assert.equal(a.hitOps[i].v[1],b.hitOps[i].v[1]);
+  }
+  for(const view of ['perspective','combined']){
+   const s={...initial(),view,rat:r},image=buildScene(s,[]).find(p=>p.image);
+   assert.ok([image.x,image.y,image.width,image.height].every(Number.isFinite));
+   assert.ok(image.hitOps.every(o=>o.v.every(Number.isFinite)));
+   assert.match(sceneToSVG([image],true),new RegExp(`assets/rats/${pose}\\.png`));
+  }
+ }
+ assert.equal(buildScene({...initial(),view:'front'},[]).filter(p=>p.image).length,0);
+ assert.equal(buildScene({...initial(),rat:{...initial().rat,visible:false}},[]).filter(p=>p.image).length,0);
+});
 test('static exports contain no editor hit areas or selection outlines',()=>{const s=initial();for(const view of ['perspective','front','combined']){s.view=view;assert.ok(buildScene(s,[]).every(p=>p.fill!=='transparent'&&!p.owner?.includes('selection')));}});
 test('wall devices stay in front of the inner frame and behind the outer frame and rat',()=>{
  for(const view of ['perspective','combined'])for(const type of Object.keys(MODULES))for(const status of Object.keys(STATES[type]))for(const preview of [false,true]){

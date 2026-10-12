@@ -1,4 +1,4 @@
-import {MODULES, STATES, FLAVORS, SOUNDS, VOLUMES, defaultState} from './model.js';
+import {MODULES, POSES, LEGACY_POSES, STATES, FLAVORS, SOUNDS, VOLUMES, defaultState} from './model.js';
 
 export const API_VERSION = '1.0.0';
 export const FORMATS = ['json', 'svg', 'png', 'pdf', 'pptx'];
@@ -16,7 +16,7 @@ const options = {
 const allOptions = Object.assign({}, ...Object.values(options));
 const moduleProperties = type => ({state:choice(Object.keys(STATES[type])), ...options[type]});
 const ratProperties = {
-  pose:choice(['stand','walk','rear','nose','press','eat']), facing:choice(['left','right']),
+  pose:choice([...Object.keys(POSES),...LEGACY_POSES]), facing:choice(['left','right']),
   visible:boolean, scale:number(.45,1.7), x:number(200,1050), y:number(250,660)
 };
 const settings = {
@@ -33,7 +33,7 @@ const modules = {
 export const CONFIG_SCHEMA = {
   $schema:'https://json-schema.org/draft/2020-12/schema',
   title:'Chamber Studio version 1 configuration',
-  description:'Zero-based cells: columns 0–2, rows 0–7. Two-row modules occupy their anchor and the row below. Overlaps are rejected at runtime. Legacy rat poses normalize to stand; labels normalize to false.',
+  description:'Zero-based cells: columns 0–2, rows 0–7. Two-row modules occupy their anchor and the row below. Overlaps are rejected at runtime. Rat poses are stand, walk, rear, nose and sit; legacy press/eat normalize to stand. Labels normalize to false.',
   ...object({
     version:{const:1}, ...settings, labels:boolean,
     walls:object({left:modules, right:modules}, ['left','right']),
@@ -64,7 +64,7 @@ export const TOOLS = [
   tool('chamber_load_example', 'Replace the layout with a bundled example. The change can be undone.', object({name:choice(EXAMPLES)}, ['name'])),
   tool('chamber_undo', 'Undo one layout change and return the restored configuration.', object({})),
   tool('chamber_redo', 'Redo one layout change and return the restored configuration.', object({})),
-  tool('chamber_export', 'Export a snapshot of the current chamber. Returns a base64 file by default; download=true triggers a browser download and returns metadata. JSON retains configuration, SVG/PDF are vector, PPTX has editable native shapes. PNG scale is 1, 2 or 3. Includes rat artwork attribution.', object({
+  tool('chamber_export', 'Export a snapshot of the current chamber. Returns a base64 file by default; download=true triggers a browser download and returns metadata. JSON retains configuration and pose. SVG/PDF retain vector chamber geometry and embed the rat PNG; PPTX has editable native chamber shapes and an embedded rat picture. PNG scale is 1, 2 or 3. Includes rat artwork attribution.', object({
     format:choice(FORMATS), scale:{type:'integer', enum:[1,2,3], default:2},
     transparent:{...boolean, default:true}, download:{...boolean, default:false}
   }, ['format']))
@@ -84,6 +84,7 @@ export function manifest() {
     modules:Object.fromEntries(Object.entries(MODULES).map(([type,m]) => [type, {
       name:m.en, width:2, height:m.h, states:Object.keys(STATES[type]), defaultState:defaultState(type), options:options[type] || {}
     }])),
+    rat:{poses:Object.keys(POSES),legacyPoses:LEGACY_POSES,facing:['left','right'],artwork:'transparent PNG'},
     examples:EXAMPLES, formats:FORMATS, tools:TOOLS
   };
 }

@@ -109,7 +109,7 @@ test('loading a configuration rejects overlaps and wrong shapes and migrates leg
   const invalid=initial(); invalid.rat.visible='false';
   assert.equal((await api.callTool('chamber_load_config',{config:invalid})).error.code,'INVALID_ARGUMENT');
   assert.deepEqual(api.getState(),original);
-  const legacy=initial(); legacy.rat.pose='walk'; legacy.labels=true;
+  const legacy=initial(); legacy.rat.pose='press'; legacy.labels=true;
   const migrated=await api.callTool('chamber_load_config',{config:legacy});
   assert.equal(migrated.result.rat.pose,'stand'); assert.equal(migrated.result.labels,false);
   assert.deepEqual(validate(migrated.result),migrated.result);
@@ -130,19 +130,38 @@ test('calls are ordered across asynchronous loads, arguments are captured on arr
   assert.equal((await broken.api.callTool('chamber_load_example',{name:'empty'})).error.code,'EXAMPLE_FAILED');
 });
 
-test('JSON and SVG exports return real files with attribution and leave state/history unchanged', async () => {
+test('JSON and self-contained SVG exports retain original rat pixels, attribution and state/history', async context => {
+  context.mock.method(globalThis,'fetch',async source=>new Response(await fs.readFile(new URL('../public/'+source.replace(/^\.\//,''),import.meta.url))));
   const {api,commits}=setup(); const original=api.getState();
   const json=await api.callTool('chamber_export',{format:'json'});
   assert.equal(json.ok,true); assert.equal(json.result.mimeType,'application/json');
   assert.deepEqual(JSON.parse(Buffer.from(json.result.data,'base64')),original);
   const svg=await api.callTool('chamber_export',{format:'svg',transparent:true});
+  assert.equal(svg.ok,true);
   assert.equal(svg.result.size,Buffer.from(svg.result.data,'base64').length);
   assert.match(Buffer.from(svg.result.data,'base64').toString(),/^<svg /);
   assert.doesNotMatch(Buffer.from(svg.result.data,'base64').toString(),/interaction-layer|selection-outline/);
+  const image=Buffer.from(svg.result.data,'base64').toString().match(/href="data:image\/png;base64,([^"]+)"/);
+  assert.ok(image);assert.deepEqual(Buffer.from(image[1],'base64'),await fs.readFile(new URL('../public/assets/rats/stand.png',import.meta.url)));
   assert.equal(svg.result.attribution.license,'CC BY 4.0'); assert.deepEqual(api.getState(),original); assert.equal(commits(),0);
   const invalid=await api.callTool('chamber_export',{format:'png',scale:0}); assert.equal(invalid.error.code,'INVALID_ARGUMENT');
   const failure=setup({makeArtifact:async()=>{throw Error('template unavailable');}});
   assert.equal((await failure.api.callTool('chamber_export',{format:'pptx'})).error.code,'EXPORT_FAILED');
+});
+
+test('agent pose settings retain every supported pose through reads and undo/redo',async()=>{
+ const {api}=setup();
+ const capabilities=await api.callTool('chamber_get_capabilities');
+ assert.deepEqual(capabilities.result.rat.poses,['stand','walk','rear','nose','sit']);
+ for(const pose of capabilities.result.rat.poses){
+  const previous=api.getState().rat.pose;
+  const result=await api.callTool('chamber_apply_operations',{operations:[{action:'settings',settings:{rat:{pose}}}]});
+  assert.equal(result.ok,true);assert.equal(result.result.rat.pose,pose);
+  await api.callTool('chamber_undo');assert.equal(api.getState().rat.pose,previous);
+  await api.callTool('chamber_redo');assert.equal(api.getState().rat.pose,pose);
+ }
+ const invalid=await api.callTool('chamber_apply_operations',{operations:[{action:'settings',settings:{rat:{pose:'missing'}}}]});
+ assert.equal(invalid.error.code,'INVALID_ARGUMENT');assert.equal(api.getState().rat.pose,'sit');
 });
 
 test('WebMCP registers callable schemas, tolerates absent/failed providers and does not affect the browser API', async () => {

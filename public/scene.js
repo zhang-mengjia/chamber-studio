@@ -18,6 +18,7 @@ export function sceneBounds(scene){
   const cubic=(p0,p1,p2,p3,t)=>{const u=1-t;return u*u*u*p0+3*u*u*t*p1+3*u*t*t*p2+t*t*t*p3;};
   for(const s of scene){
     if(s.opacity===0)continue;
+    if(s.image){include(s.x,s.y);include(s.x+s.width,s.y+s.height);continue;}
     if(s.text!==undefined){
       if(!s.fill||s.fill==='none'||!s.text)continue;
       let width=s.text.length*s.size*.61,ascent=s.size*.8,descent=s.size*.2;
@@ -50,7 +51,12 @@ export function sceneBounds(scene){
   }
   return Number.isFinite(left)?{x:left,y:top,width:Math.max(1,right-left),height:Math.max(1,bottom-top)}:{x:0,y:0,width:1,height:1};
 }
-export function sceneToSVG(scene,transparent=false,viewport=sceneBounds(scene)){const {x,y,width,height}=viewport;return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${x} ${y} ${width} ${height}">${transparent?'':`<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="white"/>`}${scene.map(s=>s.text!==undefined?`<text x="${s.x}" y="${s.y}" font-family="Arial, sans-serif" font-size="${s.size}" fill="${s.fill}" text-anchor="${s.align||'middle'}">${esc(s.text)}</text>`:`<path data-owner="${esc(s.owner||'')}" d="${toD(s.ops)}" opacity="${s.opacity??1}" fill="${s.fill||'none'}" stroke="${s.stroke||'none'}" stroke-width="${s.sw||0}" stroke-linejoin="round" stroke-linecap="round"/>`).join('')}</svg>`;}
+function imageSVG(s){
+  const c=s.crop,viewX=s.flip?s.sourceWidth-c.x-c.width:c.x;
+  const transform=s.flip?` transform="translate(${s.sourceWidth} 0) scale(-1 1)"`:'';
+  return `<svg data-owner="${esc(s.owner||'')}" x="${s.x}" y="${s.y}" width="${s.width}" height="${s.height}" viewBox="${viewX} ${c.y} ${c.width} ${c.height}" overflow="hidden" pointer-events="none"><image href="${esc(s.image)}" width="${s.sourceWidth}" height="${s.sourceHeight}"${transform}/></svg>`;
+}
+export function sceneToSVG(scene,transparent=false,viewport=sceneBounds(scene)){const {x,y,width,height}=viewport;return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${x} ${y} ${width} ${height}">${transparent?'':`<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="white"/>`}${scene.map(s=>s.image?imageSVG(s):s.text!==undefined?`<text x="${s.x}" y="${s.y}" font-family="Arial, sans-serif" font-size="${s.size}" fill="${s.fill}" text-anchor="${s.align||'middle'}">${esc(s.text)}</text>`:`<path data-owner="${esc(s.owner||'')}" d="${toD(s.ops)}" opacity="${s.opacity??1}" fill="${s.fill||'none'}" stroke="${s.stroke||'none'}" stroke-width="${s.sw||0}" stroke-linejoin="round" stroke-linecap="round"/>`).join('')}</svg>`;}
 function mapped(ops,fn){return ops.map(o=>({op:o.op,v:(o.v||[]).flatMap((_,i,a)=>i%2?[]:fn(a[i],a[i+1]))}));}
 function blend(a,b,t){return '#'+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t).toString(16).padStart(2,'0')).join('');}
 
@@ -285,7 +291,7 @@ export function buildScene(state,ratPaths,preview=false){
   if(state.view==='front')front();
   else if(state.view==='perspective')perspective();
   else{
-    perspective();scene=scene.map(s=>s.text!==undefined?{...s,x:s.x*.68+210,y:s.y*.68,size:s.size*.68}:{...s,ops:mapped(s.ops,(x,y)=>[x*.68+210,y*.68]),sw:s.sw*.68});
+    perspective();scene=scene.map(s=>s.image?{...s,x:s.x*.68+210,y:s.y*.68,width:s.width*.68,height:s.height*.68,hitOps:mapped(s.hitOps,(x,y)=>[x*.68+210,y*.68])}:s.text!==undefined?{...s,x:s.x*.68+210,y:s.y*.68,size:s.size*.68}:{...s,ops:mapped(s.ops,(x,y)=>[x*.68+210,y*.68]),sw:s.sw*.68});
     const base=scene;scene=[];front();scene=scene.map(s=>s.text!==undefined?{...s,x:s.x*.52+305,y:s.y*.4+475,size:s.size*.65}:{...s,ops:mapped(s.ops,(x,y)=>[x*.52+305,y*.4+475]),sw:s.sw*.65});scene=[...base,...scene];
   }
   return scene;

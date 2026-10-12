@@ -4,7 +4,7 @@
 
 [Open the editor](https://zhang-mengjia.github.io/chamber-studio/) · [中文说明](README.zh-CN.md) · [Report an issue](https://github.com/zhang-mengjia/chamber-studio/issues)
 
-![Chamber Studio with a poster-style chamber and LE rat](docs/preview.png)
+![Chamber Studio with a chamber and LE rat pose choices](docs/preview.png)
 
 A free browser tool for arranging modules on two 6 × 8 unit walls and creating experiment schematics. Click directly on the perspective drawing or front walls, choose a module in the nearby popover, and drag to rearrange it. No account, build step or server backend is needed.
 
@@ -30,10 +30,10 @@ Try **Examples** for dual water wells, an operant chamber or an empty chamber. L
 | Speaker | 2 × 2 | Silent / playing; Clicker, Siren, White noise, Pure tone |
 | Camera | 2 × 1 | Off / recording |
 
-Choose metal bars or perforated transparent acrylic for the floor. The black-and-white Long–Evans rat keeps its original pose, with ivory fur, coral skin and stronger outlines; move, scale, mirror or hide it. Blue glass reflections, silver wall panels and shaded metal bars follow the poster illustration style. Perspective, front-wall and combined views share one vector drawing engine, including the editable shading and reflections.
+Choose metal bars or perforated transparent acrylic for the floor. Click the black-and-white Long–Evans rat to choose standing, walking, rearing, sniffing or sitting from five artwork thumbnails; move, scale, mirror or hide it. The supplied transparent PNGs keep their original ivory fur and coral skin, with a shared floor anchor across poses. Blue glass reflections, silver wall panels and shaded metal bars follow the poster illustration style. Perspective, front-wall and combined views share one vector drawing engine, including the editable shading and reflections.
 
-- **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a component to edit its parts. The rat retains 117 source vector paths plus an editable silhouette outline.
-- **PDF / SVG:** vector paths and text, cropped to the drawing bounds.
+- **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a component to edit its parts. The rat is an embedded transparent picture you can move, resize, crop or replace; its internal artwork is raster.
+- **PDF / SVG:** vector chamber paths and text with the rat PNG embedded, cropped to the drawing bounds. SVG embeds the image bytes and works independently of the website.
 - **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber has straight outer edges and exports at 608 × 608, 1216 × 1216 or 1824 × 1824 without exterior padding.
 - **Copy image:** copies the same cropped PNG to the clipboard for pasting into documents, slides or messages. Uses the current PNG resolution and transparency settings; requires clipboard access in a supported browser on HTTPS or localhost.
 - **Configuration:** portable JSON includes modules, parameters, rat, floor and view settings.
@@ -92,4 +92,4 @@ Run `npm test`. There is no build step. Static files live in `public/`; `server.
 
 Code and documentation: **MIT**, copyright 2026 [zhang-mengjia](https://github.com/zhang-mengjia).
 
-Original LE rat artwork and its poster-style adaptation: **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**, credit **zhang-mengjia**. When sharing figures that include the rat, retain its credit, source and license link in the caption or accompanying material, and indicate modifications. See [artwork attribution](public/assets/ATTRIBUTION.md) and [third-party notices](THIRD_PARTY_NOTICES.md). The rat's separate license also applies to its appearance in screenshots and exports.
+LE rat pose artwork: **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)**, credit **zhang-mengjia**. When sharing figures that include the rat, retain its credit, source and license link in the caption or accompanying material, and indicate modifications. See [artwork attribution](public/assets/ATTRIBUTION.md) and [third-party notices](THIRD_PARTY_NOTICES.md). The rat's separate license also applies to its appearance in screenshots and exports.

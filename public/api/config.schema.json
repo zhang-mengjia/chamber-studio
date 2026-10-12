@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Chamber Studio version 1 configuration",
-  "description": "Zero-based cells: columns 0–2, rows 0–7. Two-row modules occupy their anchor and the row below. Overlaps are rejected at runtime. Legacy rat poses normalize to stand; labels normalize to false.",
+  "description": "Zero-based cells: columns 0–2, rows 0–7. Two-row modules occupy their anchor and the row below. Overlaps are rejected at runtime. Rat poses are stand, walk, rear, nose and sit; legacy press/eat normalize to stand. Labels normalize to false.",
   "type": "object",
   "properties": {
     "version": {
@@ -46,6 +46,7 @@
             "walk",
             "rear",
             "nose",
+            "sit",
             "press",
             "eat"
           ]

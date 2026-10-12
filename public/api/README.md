@@ -56,7 +56,7 @@ This example assumes an empty chamber. Read the current state or load `empty` fi
 
 Update, move source and remove can address either occupied row of a two-row module. Every batch applies atomically: a failed operation leaves state, autosave and undo history unchanged. API calls run in arrival order, including asynchronous example loads and exports. A successful change uses one undo step. Read tools and exports do not add undo steps.
 
-Module keys: `food`, `water`, `nose`, `lever`, `house`, `cue`, `speaker`, `camera`. Use the catalog for states/defaults. Food `flavor`: `grain`, `sucrose`, `chocolate`, `banana`, `strawberry`; water `volume`: 10, 20, 40, 80, 160 μL; speaker `sound`: `clicker`, `siren`, `white`, `pure`; house `hz`: 0.2–5. Update rejects options for another module type. Rat bounds: x 200–1050, y 250–660, scale 0.45–1.7, facing `left`/`right`; current pose is `stand`. Version 1 configurations with legacy rat poses normalize to `stand`. Device labels remain hidden, including when importing legacy `labels:true`.
+Module keys: `food`, `water`, `nose`, `lever`, `house`, `cue`, `speaker`, `camera`. Use the catalog for states/defaults. Food `flavor`: `grain`, `sucrose`, `chocolate`, `banana`, `strawberry`; water `volume`: 10, 20, 40, 80, 160 μL; speaker `sound`: `clicker`, `siren`, `white`, `pure`; house `hz`: 0.2–5. Update rejects options for another module type. Rat bounds: x 200–1050, y 250–660, scale 0.45–1.7, facing `left`/`right`; poses are `stand` (standing), `walk` (walking), `rear` (rearing), `nose` (sniffing) and `sit` (sitting). UI thumbnails, JSON/autosave and API settings share these values. Version 1 `press`/`eat` poses normalize to `stand`; other supported poses are preserved. Device labels remain hidden, including when importing legacy `labels:true`.
 
 ## Responses and errors
 
@@ -76,7 +76,7 @@ Formats: `json`, `svg`, `png`, `pdf`, `pptx`. Image, PDF and PPTX exports use th
 
 By default, `result` contains `filename`, `mimeType`, `size`, `format`, `encoding:"base64"`, `data` and `attribution`. Decode `data` into a local file; it is not a remote URL. Use `{format:"pptx",download:true}` to trigger a browser download, which returns metadata with `downloaded:true` and omits the base64 data. Browser download initiation alone does not confirm that a file has been saved: await the browser's download event when using this mode.
 
-The LE rat artwork is licensed separately under CC BY 4.0, by zhang-mengjia. Preserve the returned attribution when sharing figures containing the rat. PNG is a raster image; SVG/PDF are vector; PPTX retains native editable shapes. Read the editor preview to confirm layout before delivering files.
+The LE rat artwork is licensed separately under CC BY 4.0, by zhang-mengjia. Preserve the returned attribution when sharing figures containing the rat. PNG is a raster image; SVG/PDF retain vector chamber geometry with the original rat PNG embedded. SVG contains the image bytes and does not depend on the site after export. PPTX retains native editable chamber shapes and a movable, resizable, replaceable rat picture; its internal artwork is raster. Read the editor preview to confirm layout before delivering files.
 
 ## Playwright example
 

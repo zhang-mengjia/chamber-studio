@@ -2,7 +2,7 @@
 
 Application code and documentation: MIT, copyright 2026 zhang-mengjia. See [LICENSE](LICENSE).
 
-The original LE rat artwork is **CC BY 4.0**, separately from the code. See [artwork attribution](public/assets/ATTRIBUTION.md), including guidance for sharing exported figures.
+The LE rat pose artwork is **CC BY 4.0**, separately from the code. See [artwork attribution](public/assets/ATTRIBUTION.md), including guidance for sharing exported figures.
 
 Bundled browser libraries are included for offline use without a CDN:
 
