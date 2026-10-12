@@ -33,11 +33,14 @@ Try **Examples** for dual water wells, an operant chamber or an empty chamber. L
 Choose metal bars or perforated transparent acrylic for the floor. The black-and-white Long–Evans rat keeps its original pose, with ivory fur, coral skin and stronger outlines; move, scale, mirror or hide it. Blue glass reflections, silver wall panels and shaded metal bars follow the poster illustration style. Perspective, front-wall and combined views share one vector drawing engine, including the editable shading and reflections.
 
 - **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a component to edit its parts. The rat retains 117 source vector paths plus an editable silhouette outline.
-- **PDF:** vector paths and text on a 1280 × 760 point page.
-- **PNG:** 1280 × 760, 2560 × 1520 or 3840 × 2280, optionally transparent.
+- **PDF / SVG:** vector paths and text, cropped to the drawing bounds.
+- **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber has straight outer edges and exports at 608 × 608, 1216 × 1216 or 1824 × 1824 without exterior padding.
+- **Copy image:** copies the same cropped PNG to the clipboard for pasting into documents, slides or messages. Uses the current PNG resolution and transparency settings; requires clipboard access in a supported browser on HTTPS or localhost.
 - **Configuration:** portable JSON includes modules, parameters, rat, floor and view settings.
 
 Figures omit device labels, including water amounts, food flavors, sound names and flashing frequencies. Click a device to inspect its settings; configuration files retain these parameters. Older configurations with labels enabled also render without device text. A flashing lamp exports as a lit lamp. Front-wall views omit the rat and floor. Water levels, food colors, light halos and sound waves are schematic; this tool does not control hardware or play audio.
+
+All image, PDF and PowerPoint exports share the same tight bounds. Front-wall and combined views retain their layout proportions. External dimensions or a rat moved beyond the chamber expand the bounds to keep that content visible.
 
 ## Shortcuts
 

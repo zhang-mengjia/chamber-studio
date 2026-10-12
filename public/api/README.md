@@ -72,7 +72,7 @@ Check `ok` after every call. `INVALID_ARGUMENT` covers unknown fields, wrong typ
 
 ## Export and retrieve files
 
-Formats: `json`, `svg`, `png`, `pdf`, `pptx`. PNG `scale` is 1, 2 (default), or 3, producing 1280×760, 2560×1520 or 3840×2280. `transparent` defaults to `true` and applies to PNG and SVG. PDF and PPTX retain their normal white page backgrounds. Export captures a snapshot of the current configuration.
+Formats: `json`, `svg`, `png`, `pdf`, `pptx`. Image, PDF and PPTX exports use the same tight drawing bounds without exterior padding. The perspective chamber has a square, straight outer frame: PNG `scale` 1, 2 (default), or 3 produces 608×608, 1216×1216 or 1824×1824. Front-wall and combined views keep their layout proportions; external dimensions or a rat outside the chamber expand the bounds to preserve that content. `transparent` defaults to `true` and applies to PNG and SVG. PDF and PPTX retain their normal white page backgrounds. Export captures a snapshot of the current configuration.
 
 By default, `result` contains `filename`, `mimeType`, `size`, `format`, `encoding:"base64"`, `data` and `attribution`. Decode `data` into a local file; it is not a remote URL. Use `{format:"pptx",download:true}` to trigger a browser download, which returns metadata with `downloaded:true` and omits the base64 data. Browser download initiation alone does not confirm that a file has been saved: await the browser's download event when using this mode.
 
