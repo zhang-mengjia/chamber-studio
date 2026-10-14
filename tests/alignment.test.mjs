@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initial,MODULES,STATES} from '../public/model.js';
-import {CHAMBER,WALLS,wallPoint} from '../public/geometry.js';
-import {buildScene,sceneBounds} from '../public/scene.js';
+import {CHAMBER,WALLS,wallPoint,wallRegions,installationPoint,INSTALLATION_TOP} from '../public/geometry.js';
+import {buildScene,sceneBounds,sceneToSVG} from '../public/scene.js';
 import {APERTURES,REFERENCE,referencePoint} from '../public/illustration-style.js';
 import {clipNativePath} from '../public/path-clipping.js';
 
@@ -26,26 +26,57 @@ const inPolygon=(polygon,p)=>{
  return signs.every(v=>v>=-1e-7)||signs.every(v=>v<=1e-7);
 };
 
-test('mounting regions start below the glass and meet the visible floor seams',()=>{
+test('mounting regions follow the entire side-wall plane and meet ceiling and floor seams',()=>{
  const roofY=referencePoint(152.95,118.97)[1];
  for(const side of ['left','right']){
-  const wall=WALLS.perspective[side];near(wall[0][1],roofY);near(wall[1][1],roofY);
+  const wall=WALLS.perspective[side],roof=side==='left'?[CHAMBER.ceiling[0],CHAMBER.ceiling[3]]:[CHAMBER.ceiling[2],CHAMBER.ceiling[1]];
+  for(let i=0;i<2;i++)assert.deepEqual(wallPoint(wall,i,0),roof[i]);
+  const clearance=[installationPoint(wall,0,0),installationPoint(wall,1,0)];
+  assert.notEqual(clearance[0][1],clearance[1][1],'Mounting area was flattened to a screen-horizontal line');
+  for(let i=0;i<2;i++)assert.deepEqual(clearance[i],wallPoint(wall,i,INSTALLATION_TOP));
   const feet=side==='left'?[CHAMBER.floor[3],CHAMBER.floor[0]]:[CHAMBER.floor[1],CHAMBER.floor[2]];
   for(let i=0;i<2;i++)assert.deepEqual(wallPoint(wall,i,1),feet[i]);
  }
  for(const side of ['left','right'])for(let col=0;col<3;col++)for(const type of Object.keys(MODULES))for(const state of Object.keys(STATES[type])){
   const s=initial();s.rat.visible=false;s.walls={left:[],right:[]};s.walls[side]=[{type,state,col,row:0}];
   const devices=buildScene(s,[]).filter(p=>p.owner.startsWith(side+' ')&&p.owner.includes(' column '));
-  assert.ok(sceneBounds(devices).y>=roofY-1e-7,`${side} column ${col}: ${type} enters the roof glass`);
+  assert.ok(sceneBounds(devices).y>roofY,`${side} column ${col}: ${type} enters the roof reveal instead of its mounting area`);
  }
+ const s=initial();s.walls={left:[],right:[]};
+ const cells=wallRegions(s,true).filter(r=>r.wall==='left'&&r.row===0);
+ assert.notEqual(cells[0].points[0][1],cells[2].points[0][1],'Upper cells lost their near/far height relationship');
 });
 
-test('floor covers side-panel feet and the ceiling overlays its trim, with devices above both',()=>{
+test('floor covers side-panel feet and roof glass overlays internal devices while the front rim stays in front',()=>{
  const s=initial();s.rat.visible=false;const scene=buildScene(s,[]);
  const floor=scene.findIndex(p=>p.owner==='Floor'),ceiling=scene.findIndex(p=>p.owner==='Box glass ceiling');
  for(const owner of ['left wall','right wall','Box frame'])assert.ok(scene.findLastIndex(p=>p.owner===owner)<floor);
  assert.ok(floor<ceiling);
- assert.ok(scene.filter(p=>p.owner.includes(' column ')).every(p=>scene.indexOf(p)>ceiling));
+ const outer=scene.findIndex(p=>p.owner==='Box outer frame');
+ assert.ok(scene.filter(p=>p.owner.includes(' column ')).every(p=>scene.indexOf(p)>floor&&scene.indexOf(p)<ceiling));
+ assert.ok(ceiling<outer);
+});
+
+test('lamps in consecutive installation rows have a visible gap instead of covering one another',()=>{
+ for(const side of ['left','right'])for(let col=0;col<3;col++){
+  const s=initial();s.rat.visible=false;s.effects=false;s.walls={left:[],right:[]};
+  s.walls[side]=Array.from({length:8},(_,row)=>({type:'house',state:'on',col,row}));
+  const scene=buildScene(s,[]),boxes=s.walls[side].map(m=>sceneBounds(scene.filter(p=>p.owner===`${side} House light column ${col+1} row ${m.row+1}`)));
+  for(let row=1;row<8;row++)assert.ok(boxes[row].y-(boxes[row-1].y+boxes[row-1].height)>1,`${side} column ${col}: lamps ${row} and ${row+1} overlap`);
+ }
+});
+
+test('protruding devices render far to near regardless of the order they were installed',()=>{
+ for(const side of ['left','right']){
+  const s=initial();s.effects=false;s.rat.visible=false;s.walls={left:[],right:[]};
+  s.walls[side]=[{type:'house',state:'on',col:0,row:2},{type:'house',state:'on',col:2,row:2}];
+  const original=JSON.stringify(s),scene=buildScene(s,[]);
+  assert.equal(JSON.stringify(s),original,'Drawing changed the saved configuration');
+  const owners=[...new Set(scene.filter(p=>p.owner.includes('House light column')).map(p=>p.owner))];
+  assert.match(owners[0],new RegExp(`column ${side==='left'?3:1} row 3$`));
+  const reversed=structuredClone(s);reversed.walls[side].reverse();
+  assert.equal(sceneToSVG(scene),sceneToSVG(buildScene(reversed,[])));
+ }
 });
 
 test('native clipping splits a cubic exactly without stroking the new aperture edge',()=>{

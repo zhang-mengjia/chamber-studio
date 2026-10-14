@@ -9,19 +9,26 @@ export const CHAMBER = {
   sill:[[149.39,235.7],[304.15,235.7],[304.15,238.91],[149.39,238.91]].map(p=>referencePoint(...p))
 };
 export const WALLS = {
-  // The sloping strip above the front roof edge is glass, not installation
-  // space. Rear wall feet meet the visible floor at 200.02, rather than the
-  // source side-panel extension hidden underneath that floor.
+  // Installation coordinates belong to the whole side-wall plane. Its upper
+  // edge follows the ceiling into depth; the front horizontal rim is not the
+  // top of the rear cells. Feet meet the visible floor, not hidden extensions.
   perspective: {
-    left:[[152.95,118.97],[180.09,118.97],[180.09,200.02],[152.95,235.7]].map(p=>referencePoint(...p)),
-    right:[[273.45,118.97],[300.59,118.97],[300.59,235.7],[273.45,200.02]].map(p=>referencePoint(...p))
+    left:[[152.95,118.97],[180.09,101.24],[180.09,200.02],[152.95,235.7]].map(p=>referencePoint(...p)),
+    right:[[273.45,101.24],[300.59,118.97],[300.59,235.7],[273.45,200.02]].map(p=>referencePoint(...p))
   },
+  // The front diagram shows the 6 × 8 mounting face, cropped below the roof
+  // clearance; it does not include the surrounding chamber shell.
   front: {left:[[230,85],[570,85],[570,565],[230,565]], right:[[750,85],[1090,85],[1090,565],[750,565]]}
 };
 export function wallPoint(corners,u,v) {
   const [a,b,c,d]=corners;
   return [0,1].map(i=>a[i]*(1-u)*(1-v)+b[i]*u*(1-v)+c[i]*u*v+d[i]*(1-u)*v);
 }
+// Keep a real, uniform height clearance on the wall plane. This matches the
+// roof reveal (17.73 / 98.78 ≈ 18%), rounded up for the rim and device outlines,
+// without flattening the depth axis or adding a screen-space row-zero offset.
+export const INSTALLATION_TOP = .2;
+export const installationPoint = (corners,u,v) => wallPoint(corners,u,INSTALLATION_TOP+(1-INSTALLATION_TOP)*v);
 export function viewPanels(view) {
   return view==='combined'
     ? [{mode:'perspective',map:([x,y])=>[x*.68+210,y*.68]}, {mode:'front',map:([x,y])=>[x*.52+305,y*.4+475]}]
@@ -35,7 +42,8 @@ export function wallRegions(state, cells=false) {
       if(!cells&&m&&m.row!==row) continue;
       const h=!cells&&m?MODULES[m.type].h:1;
       const corners=WALLS[panel.mode][wall];
-      const points=[[col*2,row],[col*2+2,row],[col*2+2,row+h],[col*2,row+h]].map(([x,y])=>panel.map(wallPoint(corners,x/6,y/8)));
+      const at=panel.mode==='perspective'?installationPoint:wallPoint;
+      const points=[[col*2,row],[col*2+2,row],[col*2+2,row+h],[col*2,row+h]].map(([x,y])=>panel.map(at(corners,x/6,y/8)));
       regions.push({wall,col,row,h,points,mode:panel.mode,type:m?.type});
     }
   }

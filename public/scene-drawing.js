@@ -1,6 +1,6 @@
 import {MODULES,defaultState,options,FLAVORS,VOLUMES} from './model.js';
 import {ratScene} from './rat-art.js';
-import {CHAMBER,WALLS,wallPoint} from './geometry.js';
+import {CHAMBER,WALLS,wallPoint,installationPoint} from './geometry.js';
 import {STYLE,REFERENCE,APERTURES,REFERENCE_SCALE,referencePoint,sourceWallPoint} from './illustration-style.js';
 import {clipNativePath} from './path-clipping.js';
 
@@ -13,9 +13,6 @@ const ellipseOps=(x,y,rx,ry)=>{
     {op:'C',v:[x-rx,y-k*ry,x-k*rx,y-ry,x,y-ry]},
     {op:'C',v:[x+k*rx,y-ry,x+rx,y-k*ry,x+rx,y]},{op:'Z',v:[]}];
 };
-const grillePoints=REFERENCE.speaker.flatMap(p=>p.ops.flatMap(o=>o.v));
-const grilleX=grillePoints.filter((_,i)=>i%2===0),grilleY=grillePoints.filter((_,i)=>i%2===1);
-const grilleBox={x:Math.min(...grilleX),y:Math.min(...grilleY),w:Math.max(...grilleX)-Math.min(...grilleX),h:Math.max(...grilleY)-Math.min(...grilleY)};
 const grilleFront=REFERENCE.speaker.map(p=>({...p,ops:mapped(p.ops,(sx,sy)=>sourceWallPoint(sx,sy,'right'))}));
 const frontPoints=grilleFront.flatMap(p=>p.ops.flatMap(o=>o.v));
 const frontX=frontPoints.filter((_,i)=>i%2===0),frontY=frontPoints.filter((_,i)=>i%2===1);
@@ -39,10 +36,10 @@ export function buildScene(state,_ratPaths,preview=false){
   };
 
   function wall(corners,side,devices=null){
-    const xy=(u,v)=>wallPoint(corners,u,v),point=(x,y)=>xy(x/6,y/8);
+    const straight=devices===null;
+    const xy=(u,v)=>(straight?wallPoint:installationPoint)(corners,u,v),point=(x,y)=>xy(x/6,y/8);
     const rect=(x,y,w,h,fill,stroke=STYLE.ink,sw=STYLE.line)=>poly([[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(p=>point(...p)),fill,stroke,sw);
     const oval=(x,y,rx,ry,fill,stroke=STYLE.ink,sw=STYLE.detail)=>add(mapped(ellipseOps(x,y,rx,ry),point),fill,stroke,sw);
-    const straight=devices===null;
     owner=side+' wall';
     if(straight)poly(corners,STYLE.wall,STYLE.ink,1.5);
     else reference(side);
@@ -51,14 +48,17 @@ export function buildScene(state,_ratPaths,preview=false){
       for(let c=1;c<3;c++)line(xy(c/3,0),xy(c/3,1),'#A5A39F',.65);
       for(let r=1;r<8;r++)line(xy(0,r/8),xy(1,r/8),'#A5A39F',.65);
     }
-    for(const m of state.walls[side]){
+    // Rendering follows chamber depth, independent of add/move history. The
+    // left wall runs front-to-back; the right wall has the opposite ordering.
+    const modules=straight?state.walls[side]:[...state.walls[side]].sort((a,b)=>(side==='left'?b.col-a.col:a.col-b.col)||a.row-b.row);
+    for(const m of modules){
       const start=scene.length,def=MODULES[m.type],x=m.col*2,y=m.row;
       const actual=m.state??defaultState(m.type),opt=options(m);
       const ms=actual==='flashing'?(preview&&Date.now()%(1000/opt.hz)>500/opt.hz?'off':'on'):actual;
       owner=side+' '+def.en+' column '+(m.col+1)+' row '+(m.row+1);
       const a=point(x+1,y+.5),b=point(x+1,y+1.5),unit=Math.hypot(b[0]-a[0],b[1]-a[1]);
       if(m.type==='house'){
-        const lamp=point(x+.845,y+.535);
+        const lamp=point(x+1,y+.5);
         if(ms==='on'&&state.effects){
           if(straight)oval(x+1,y+.5,.45,.38,STYLE.lamp,'none',0);
           else add(ellipseOps(lamp[0]+(side==='left'?1:-1)*unit*.32,lamp[1],unit*.35,unit*.38),STYLE.lamp,'none',0);
@@ -69,21 +69,17 @@ export function buildScene(state,_ratPaths,preview=false){
           oval(x+1,y+.5,.27,.27,ms==='on'?STYLE.lamp:STYLE.charcoal);
           oval(x+.98,y+.36,.18,.07,ms==='on'?'#FCF7E5':STYLE.lens,'none',0);
         }else{
-          const k=unit*.96/10.87,sign=side==='left'?1:-1;
+          const k=unit*.9/10.87,sign=side==='left'?1:-1;
           reference('house',(sx,sy)=>[lamp[0]+sign*(sx-174.87)*k,lamp[1]+(sy-135.83)*k],k,p=>({...p,
             fill:ms==='on'&&p.fill==='#000000'?STYLE.lamp:ms==='on'&&p.fill==='#97CDDE'?'#FCF7E5':p.fill}));
         }
       }else if(m.type==='speaker'){
         // The reference's 61 perforations remain 61 independently editable
         // cubic paths, projected into whichever wall carries the module.
-        if(straight){
-          // Remove the source side-wall projection when looking straight at
-          // that wall; perspective views retain the original screen silhouette.
-          for(const p of grilleFront)add(mapped(p.ops,(u,v)=>point(x+.08+(u-frontBox.x)/frontBox.w*1.84,y+.1+(v-frontBox.y)/frontBox.h*1.8)),p.fill,'none',0);
-        }else{
-          const center=point(x+1,y+1),k=unit*1.82/grilleBox.h,sign=side==='right'?1:-1;
-          reference('speaker',(sx,sy)=>[center[0]+sign*(sx-grilleBox.x-grilleBox.w/2)*k,center[1]+(sy-grilleBox.y-grilleBox.h/2)*k],k);
-        }
+        // Recover the wall-face coordinates, then project that plane at the
+        // destination cell. A fixed screen-space ellipse tilts incorrectly at
+        // the upper rows and on the opposite wall.
+        for(const p of grilleFront)add(mapped(p.ops,(u,v)=>point(x+.08+(u-frontBox.x)/frontBox.w*1.84,y+.1+(v-frontBox.y)/frontBox.h*1.8)),p.fill,'none',0);
         if(ms==='playing'&&state.effects){
           const pts=Array.from({length:49},(_,i)=>{
             const t=i/48,wave=opt.sound==='clicker'?(i%12<2?.12:-.04):opt.sound==='siren'?.12*Math.sin(t*t*32):opt.sound==='white'?.1*Math.sin(i*73.37)*Math.cos(i*18.7):.1*Math.sin(t*25.13);
@@ -173,8 +169,9 @@ export function buildScene(state,_ratPaths,preview=false){
     owner='Box frame';reference('leftTrim');reference('rightTrim');
     // The source floor overlays the side-panel extensions at the rear corners.
     floor();
-    owner='Box glass ceiling';reference('ceiling');
     scene.push(...devices);
+    // Roof glass and the front rim overlay internal parts, in chamber depth order.
+    owner='Box glass ceiling';reference('ceiling');
     owner='Box outer frame';reference('frame');
     if(state.rat.visible)scene.push(...ratScene(state.rat));
   }

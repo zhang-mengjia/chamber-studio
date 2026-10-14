@@ -14,9 +14,16 @@ is unchanged. `public/illustration-style.js` defines the shared palette and
 projection, and `public/scene-drawing.js` places these components in all views.
 Ports, cue lights, nose pokes, cameras, floor patterns and effects use the same
 palette and line weights. Installation cells remain interactive on continuous
-wall panels below the horizontal front roof edge; the grid is optional. The floor
-covers the side-panel extensions at the rear seams, following the source layer
-order. Recessed cups, liquid and pellets share their mounting panel's transform;
+wall planes with a uniform 20% height clearance below the ceiling. The upper row
+follows the wall's perspective instead of a screen-horizontal line; the same
+clearance and cell coordinates drive perspective drawing, clicking and all
+exports. Front-wall diagrams show the cropped 6 × 8 mounting face, without the
+surrounding roof clearance. The floor
+covers the side-panel extensions at the rear seams. Internal devices are drawn
+before the transparent roof and front rim, so upper parts stay inside the box.
+Protruding devices are ordered from far to near, independently of installation
+history; opposite walls use opposite depth directions.
+Recessed cups, liquid and pellets share their mounting panel's transform;
 the original aperture is retained as clipped native curves without artificial
 cut-edge outlines in SVG, PDF and PowerPoint.
 
