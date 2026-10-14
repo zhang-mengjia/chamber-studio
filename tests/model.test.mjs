@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {initial,place,validate,occupant,STATES,defaultState,MODULES,POSES,LEGACY_POSES} from '../public/model.js';
 import {buildScene,sceneBounds,sceneToSVG} from '../public/scene.js';
 import {insertModule,dragTarget,UndoHistory} from '../public/editor.js';
-import {CHAMBER,WALLS,wallRegions,contains} from '../public/geometry.js';
-import {ratScene} from '../public/rat-art.js';
+import {CHAMBER,WALLS,wallPoint,wallRegions,contains} from '../public/geometry.js';
+import {ratScene,ratFloorAnchor,centerRat} from '../public/rat-art.js';
 import assets from '../public/assets/rats/poses.json' with {type:'json'};
 import {STYLE,REFERENCE} from '../public/illustration-style.js';
 test('reference grille curves stay editable and water quantities produce different visible pools',()=>{
@@ -58,6 +58,24 @@ test('all five rat poses survive configuration round-trips and legacy poses migr
   assert.equal(next.walls.left[1].volume,160);
  }
  const invalid=initial();invalid.rat.pose='missing';assert.throws(()=>validate(invalid),/素材/);
+});
+
+test('returning a rat to center puts its floor anchor at the current floor center without resetting pose, facing or size',()=>{
+ const center=wallPoint(CHAMBER.floor,.5,.5);
+ for(const pose of Object.keys(POSES))for(const facing of ['left','right'])for(const scale of [.45,1,1.7]){
+  const original={...initial().rat,pose,facing,scale,x:200,y:660,visible:false};
+  const saved=structuredClone(original),centered=centerRat(original);
+  assert.deepEqual(original,saved,'Centering mutated the original rat');
+  assert.deepEqual(ratFloorAnchor(centered),center);
+  assert.deepEqual({...centered,x:original.x,y:original.y,visible:false},original);
+  assert.equal(centered.visible,true);assert.deepEqual(centerRat(centered),centered);
+  const state=initial();state.rat=centered;
+  assert.deepEqual(validate(JSON.parse(JSON.stringify(state))).rat,centered);
+  const history=new UndoHistory();history.record({state:initial(),selected:null});
+  const current={state,selected:{kind:'rat'}};
+  const restored=history.undo(current);assert.equal(restored.state.rat.y,initial().rat.y);
+  assert.deepEqual(history.redo(restored).state.rat,centered);
+ }
 });
 test('all rat poses render native curves, share floor anchors and mirror in every exported rat view',()=>{
  for(const pose of Object.keys(POSES))for(const scale of [.45,1,1.7]){

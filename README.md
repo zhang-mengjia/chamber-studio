@@ -53,7 +53,7 @@ All image, PDF and PowerPoint exports share the same tight bounds. Front-wall an
 | Arrow keys | Move module by a cell or rat by one drawing unit |
 | Shift + arrow keys | Move rat by 10 units |
 | Escape | Cancel drag or selection |
-| Ctrl / Command + S | Save configuration |
+| Ctrl / Command + S | Copy current image |
 
 Select a destination panel before pasting. Occupied positions are protected. Text inputs keep their native shortcuts. Undo retains up to 60 steps until the page is reloaded.
 

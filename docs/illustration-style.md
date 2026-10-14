@@ -48,6 +48,9 @@ The editor, clipboard, PNG, SVG, PDF and PPTX consume the same scene. SVG and PD
 contain vector rat and chamber paths. PPTX uses native DrawingML freeform shapes
 grouped by device and rat. PNG and the clipboard rasterize that scene when
 exporting. Parameters and pose changes retain autosave and undo/redo behavior.
+**Return to center** places the rat's floor anchor at the current floor plane's
+center, retaining its pose, facing and scale. **Ctrl / Command + S** copies the
+current image using the same settings as the toolbar's Copy image button.
 
 Load **Examples → Reference layout** for the flat floor, lamp, speaker, cup and
 lever arrangement. The new plain floor sits alongside metal bars and perforated

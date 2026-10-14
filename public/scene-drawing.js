@@ -1,5 +1,5 @@
 import {MODULES,defaultState,options,FLAVORS,VOLUMES} from './model.js';
-import {ratScene} from './rat-art.js';
+import {ratScene,ratFloorAnchor} from './rat-art.js';
 import {CHAMBER,WALLS,WALL_UNITS,wallPoint,chamberPoint,moduleDepth,floorDepth,viewDepth,viewPanels} from './geometry.js';
 import {STYLE,REFERENCE,APERTURES,REFERENCE_SCALE,referencePoint,sourceWallPoint} from './illustration-style.js';
 import {clipNativePath} from './path-clipping.js';
@@ -185,7 +185,7 @@ export function buildScene(state,_ratPaths,preview=false){
     owner='Box back';reference('back');
     const devices=[];wall(WALLS.perspective.left,'left',devices);wall(WALLS.perspective.right,'right',devices);
     floor();
-    if(state.rat.visible)devices.push({depth:viewDepth(floorDepth(state.rat.y+35*state.rat.scale),0),key:'Rat',paths:ratScene(state.rat)});
+    if(state.rat.visible)devices.push({depth:viewDepth(floorDepth(ratFloorAnchor(state.rat)[1]),0),key:'Rat',paths:ratScene(state.rat)});
     // Both walls and the animal share one order along the observer's sight line.
     // Glass remains translucent, so occupied upper cells remain visible through it.
     devices.sort((a,b)=>a.depth-b.depth||a.key.localeCompare(b.key));

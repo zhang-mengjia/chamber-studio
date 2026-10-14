@@ -3,7 +3,7 @@ export const english = {
   '模块化实验箱':'Modular behavior chambers', '方案名称':'Configuration name',
   '已保存在本机':'Saved on this device', '自动保存失败，请保存配置':'Autosave unavailable — download your configuration',
   '文件与编辑':'File and edit', '撤销':'Undo', '重做':'Redo', '撤销 Ctrl+Z':'Undo Ctrl+Z',
-  '重做 Ctrl+Y / Ctrl+Shift+Z':'Redo Ctrl+Y / Ctrl+Shift+Z', '保存配置 Ctrl+S':'Save configuration Ctrl+S',
+  '重做 Ctrl+Y / Ctrl+Shift+Z':'Redo Ctrl+Y / Ctrl+Shift+Z', '复制图片 Ctrl+S':'Copy image Ctrl+S',
   '保存配置':'Save config', '载入配置':'Load config', '导出图片 / PPT':'Export',
   '复制图片':'Copy image', '正在复制图片…':'Copying image…', '图片已复制，可直接粘贴':'Image copied; ready to paste',
   '复制失败：':'Copy failed: ', '当前浏览器无法复制图片，请使用 PNG 导出':'This browser cannot copy images; export a PNG instead',
