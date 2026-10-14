@@ -1,19 +1,20 @@
 import {MODULES, occupant} from './model.js';
+import {referencePoint,REFERENCE_HEIGHT} from './illustration-style.js';
 
 export const WALL_UNITS = {width:6,height:8};
 export const CHAMBER = {
-  bounds:{x:336,y:61,width:608,height:608},
-  ceiling:[[340,65],[940,65],[815,155],[465,155]],
-  back:[[465,155],[815,155],[815,515],[465,515]],
-  floor:[[465,515],[815,515],[940,635],[340,635]],
-  sill:[[340,635],[940,635],[940,665],[340,665]]
+  bounds:{x:336,y:61,width:608,height:REFERENCE_HEIGHT},
+  ceiling:[[152.95,118.97],[300.59,118.97],[273.45,101.24],[180.09,101.24]].map(p=>referencePoint(...p)),
+  back:[[180.09,101.24],[273.45,101.24],[273.45,200.01],[180.09,200.01]].map(p=>referencePoint(...p)),
+  floor:[[180.09,200.02],[273.45,200.02],[300.59,235.7],[152.95,235.7]].map(p=>referencePoint(...p)),
+  sill:[[149.39,235.7],[304.15,235.7],[304.15,238.91],[149.39,238.91]].map(p=>referencePoint(...p))
 };
 export const WALLS = {
-  // Retain the original editor's camera and full 6 × 8 installation planes.
-  // Every row, including the upper and lower rows, is an installation row.
+  // The reference camera and full-height installation planes are independent
+  // of the front rim's screen position. Every row spans the actual wall face.
   perspective: {
-    left:[[340,65],[465,155],[465,515],[340,635]],
-    right:[[815,155],[940,65],[940,635],[815,515]]
+    left:[[152.95,118.97],[180.09,101.24],[180.09,200.02],[152.95,235.7]].map(p=>referencePoint(...p)),
+    right:[[273.45,101.24],[300.59,118.97],[300.59,235.7],[273.45,200.02]].map(p=>referencePoint(...p))
   },
   // Equal scales in both axes: 60 drawing points per physical unit, giving
   // 2:1 single-row modules and square two-row modules before perspective.
@@ -25,8 +26,8 @@ export function wallPoint(corners,u,v) {
 }
 export function viewPanels(view) {
   return view==='combined'
-    ? [{mode:'perspective',map:([x,y])=>[x*.68+210,y*.68]}, {mode:'front',map:([x,y])=>[x*.4+384,y*.4+475]}]
-    : [{mode:view,map:p=>p}];
+    ? [{mode:'perspective',scale:.68,map:([x,y])=>[x*.68+210,y*.68]}, {mode:'front',scale:.4,map:([x,y])=>[x*.4+384,y*.4+420]}]
+    : [{mode:view,scale:1,map:p=>p}];
 }
 export function wallRegions(state, cells=false) {
   const regions=[];

@@ -3,7 +3,7 @@ import {MODULES,POSES,STATES,FLAVORS,SOUNDS,VOLUMES,options,defaultState,initial
 import {buildScene,sceneBounds,sceneToSVG,toD} from './scene.js';
 import {ratScene} from './rat-art.js';
 import {wallRegions,contains} from './geometry.js';
-import {insertModule,UndoHistory} from './editor.js';
+import {insertModule,dragTarget,UndoHistory} from './editor.js';
 import {download,pptxBlob,pdfBlob,pngBlob,copyPng} from './export.js';
 import {createAgentAPI,registerWebMCP} from './agent.js';
 
@@ -88,7 +88,7 @@ $('canvas').addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.id)return;if(!drag.active&&Math.hypot(e.clientX-drag.screen.x,e.clientY-drag.screen.y)<5)return;if(drag.kind==='module'&&!drag.module)return;
   drag.active=true;$('canvas').classList.add('dragging');const p=point(e);
   if(drag.kind==='rat'){draft=structuredClone(state);draft.rat=ratClamped({...state.rat,x:drag.x+(p.x-drag.start.x)*drag.f,y:drag.y+(p.y-drag.start.y)*drag.f});}
-  else{drag.target=wallRegions(state,true).find(r=>contains(r.points,p));if(drag.target)drag.target={...drag.target,row:drag.target.row-drag.grabRow};drag.valid=false;if(drag.target){try{insertModule(state,drag.target,drag.module,drag.source);drag.valid=true;}catch{}}const badge=$('dragBadge');badge.hidden=false;badge.className=drag.valid?'':'invalid';badge.textContent=t(MODULES[drag.module.type].name)+' · '+(drag.valid?t('松开以放置'):t('此处无法放置'));badge.style.left=Math.min(innerWidth-180,e.clientX+16)+'px';badge.style.top=Math.max(12,e.clientY-35)+'px';}
+  else{drag.target=dragTarget(wallRegions(state,true).find(r=>contains(r.points,p)),drag.module,drag.grabRow);drag.valid=false;if(drag.target){try{insertModule(state,drag.target,drag.module,drag.source);drag.valid=true;}catch{}}const badge=$('dragBadge');badge.hidden=false;badge.className=drag.valid?'':'invalid';badge.textContent=t(MODULES[drag.module.type].name)+' · '+(drag.valid?t('松开以放置'):t('此处无法放置'));badge.style.left=Math.min(innerWidth-180,e.clientX+16)+'px';badge.style.top=Math.max(12,e.clientY-35)+'px';}
   renderPreview();
 });
 $('canvas').addEventListener('pointerup',e=>{

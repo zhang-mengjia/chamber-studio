@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initial,place,validate,occupant,STATES,defaultState,MODULES,POSES,LEGACY_POSES} from '../public/model.js';
 import {buildScene,sceneBounds,sceneToSVG} from '../public/scene.js';
-import {insertModule,UndoHistory} from '../public/editor.js';
+import {insertModule,dragTarget,UndoHistory} from '../public/editor.js';
 import {CHAMBER,WALLS,wallRegions,contains} from '../public/geometry.js';
 import {ratScene} from '../public/rat-art.js';
 import assets from '../public/assets/rats/poses.json' with {type:'json'};
@@ -27,6 +27,21 @@ test('moving and copying preserves options, rejects collisions atomically, and p
  const moved=insertModule(s,{wall:'right',col:0,row:3},m,{wall:'left',col:0,row:5});assert.equal(occupant(moved.walls.right,0,4).volume,160);assert.equal(occupant(moved.walls.left,0,5),undefined);
  const shifted=insertModule(s,{wall:'left',col:0,row:6},m,{wall:'left',col:0,row:5});assert.equal(occupant(shifted.walls.left,0,7).state,'full');
  assert.throws(()=>insertModule(s,{wall:'right',col:1,row:0},m),/占用/);assert.throws(()=>insertModule(s,{wall:'right',col:0,row:7},m),/边界/);assert.equal(JSON.stringify(s),original);
+});
+test('dragging either half of a two-row module reaches both wall edges and still protects occupied destinations',()=>{
+ const s=initial();s.walls={left:[{type:'water',state:'full',volume:160,col:2,row:6}],right:[]};
+ const module=s.walls.left[0],source={wall:'left',col:2,row:6},original=JSON.stringify(s);
+ const top=dragTarget({wall:'right',col:0,row:0},module,1);
+ const moved=insertModule(s,top,module,source);
+ assert.equal(occupant(moved.walls.right,0,0).volume,160);assert.equal(occupant(moved.walls.right,0,1).row,0);
+ const bottom=dragTarget({wall:'right',col:0,row:7},module,0);
+ const lowered=insertModule(moved,bottom,moved.walls.right[0],top);
+ assert.equal(occupant(lowered.walls.right,0,7).row,6);
+ assert.equal(dragTarget({wall:'right',col:0,row:4},module,1).row,3);
+ assert.equal(dragTarget(null,module,1),null);
+ s.walls.right=[{type:'cue',state:'off',col:0,row:0}];
+ assert.throws(()=>insertModule(s,top,module,source),/占用/);
+ s.walls.right=[];assert.equal(JSON.stringify(s),original);
 });
 test('undo and redo retain independent snapshots and discard redo after a new edit',()=>{
  const h=new UndoHistory(2),a={state:initial(),selected:null},b=structuredClone(a);b.state.floor='acrylic';h.record(a);a.state.name='later mutation';assert.equal(h.undo(b).state.name,'双水槽实验箱');assert.equal(h.redo(a).state.floor,'acrylic');h.undo(b);h.record(a);assert.equal(h.redo(b),null);h.record(a);h.record(a);assert.equal(h.past.length,2);
@@ -84,11 +99,11 @@ test('wall devices stay in front of the inner frame and behind the outer frame a
   if(view==='perspective')assert.deepEqual(sceneBounds(scene),CHAMBER.bounds);
  }
 });
-test('original chamber perspective retains its square frame and tight export viewport',()=>{
+test('reference perspective retains its camera proportions and tight export viewport',()=>{
  for(const floor of ['plain','bars','acrylic'])for(const visible of [false,true]){
   const s=initial();s.floor=floor;s.rat.visible=visible;
   const scene=buildScene(s,[]),box=sceneBounds(scene);
-  assert.deepEqual(box,CHAMBER.bounds);assert.equal(box.width/box.height,1);
+  assert.deepEqual(box,CHAMBER.bounds);assert.ok(Math.abs(box.width/box.height-155.26/138.17)<1e-9);
   for(const side of ['left','right']){const corners=WALLS.perspective[side],edge=side==='left'?[corners[0],corners[3]]:[corners[1],corners[2]];assert.equal(edge[0][0],edge[1][0]);}
   assert.ok(sceneToSVG(scene,true).includes(`width="608" height="${box.height}" viewBox="336 61 608 ${box.height}"`));
   assert.ok(sceneToSVG(scene,false).includes(`<rect x="336" y="61" width="608" height="${box.height}" fill="white"/>`));

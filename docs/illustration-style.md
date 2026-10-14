@@ -2,9 +2,9 @@
 
 The project uses the chamber illustration supplied in `example.pptx` as its
 style reference: warm gray walls, a pale rear wall, thin dark outlines, a narrow
-front rim, understated glass and flat device colors. The chamber retains the
-original editor's camera and 608 × 608 square outer frame. The reference supplies
-the drawing style; its shell proportions do not replace the installation model.
+front rim, understated glass and flat device colors. The chamber preserves the
+reference's camera and approximately 1.124:1 width-to-height ratio, with
+608 × 541.075 drawing bounds. One scale in both axes preserves the source shell.
 
 `public/assets/reference-parts.json` contains the original chamber SVG paths,
 separated into shell, rim, lamp, speaker, lever and cup components. It records
@@ -16,14 +16,18 @@ palette and line weights. Each complete wall is 6 units wide and 8 units high:
 three columns of eight installable rows, without a reserved top strip. Single-row
 modules are 2 × 1 (2:1); two-row modules are 2 × 2 (square). Food, water and speaker
 modules span two adjacent rows. Both front diagrams use equal scales in both axes;
-the perspective view foreshortens these same physical units with the original
-camera from commit `5677146`. The shared wall coordinates drive drawing, clicking,
-dragging and exports. The shell is drawn from these planes in the reference palette.
-Roof glass and inner rails stay behind devices, as in the original editor, so
-top-row devices remain visible. The narrow outer rim stays in front.
+the perspective view maps these same units to the complete reference side walls.
+The shared wall coordinates drive drawing, clicking, dragging and exports.
+Combined-view drawing and hit regions also share the same panel transforms.
+The original shell curves are reused. Transparent roof glass is drawn before
+device contours so top-row parts remain legible through the glass. The narrow
+outer rim stays in front; there is no roof-clearance strip in the wall grid.
 Protruding devices are ordered from far to near, independently of installation
-history; opposite walls use opposite depth directions. The source lamp curves are
-sized to the original lamp's 0.74-unit diameter and 0.46-unit protrusion.
+history; opposite walls use opposite depth directions. Uniform scaling retains
+the native lamp and lever silhouettes while fitting each into one row. Both
+protrude toward the chamber interior. Dragging either half of a two-row module to
+the top or bottom edge snaps the full module to a legal anchor. Occupied positions
+are still protected.
 Recessed cups, liquid and pellets share their mounting panel's transform;
 the original aperture is retained as clipped native curves without artificial
 cut-edge outlines in SVG, PDF and PowerPoint.

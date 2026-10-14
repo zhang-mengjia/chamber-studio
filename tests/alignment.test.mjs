@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {initial,validate,place,MODULES,STATES} from '../public/model.js';
 import {CHAMBER,WALLS,WALL_UNITS,wallPoint,wallRegions} from '../public/geometry.js';
 import {buildScene,sceneBounds,sceneToSVG} from '../public/scene.js';
-import {APERTURES,REFERENCE} from '../public/illustration-style.js';
+import {APERTURES,REFERENCE,referencePoint} from '../public/illustration-style.js';
 import {clipNativePath} from '../public/path-clipping.js';
 
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
@@ -26,9 +26,10 @@ const inPolygon=(polygon,p)=>{
  return signs.every(v=>v>=-1e-7)||signs.every(v=>v<=1e-7);
 };
 
-test('all eight installation rows span the original wall planes from ceiling to floor without a reserved strip',()=>{
- assert.deepEqual(WALLS.perspective.left,[[340,65],[465,155],[465,515],[340,635]]);
- assert.deepEqual(WALLS.perspective.right,[[815,155],[940,65],[940,635],[815,515]]);
+test('reference camera retains full-height installation planes from ceiling to floor without a reserved strip',()=>{
+ assert.deepEqual(WALLS.perspective.left,[[152.95,118.97],[180.09,101.24],[180.09,200.02],[152.95,235.7]].map(p=>referencePoint(...p)));
+ assert.deepEqual(WALLS.perspective.right,[[273.45,101.24],[300.59,118.97],[300.59,235.7],[273.45,200.02]].map(p=>referencePoint(...p)));
+ assert.ok(CHAMBER.ceiling[0][1]>CHAMBER.ceiling[3][1],'The reference camera was replaced by the old editor camera');
  for(const side of ['left','right']){
   const wall=WALLS.perspective[side],roof=side==='left'?[CHAMBER.ceiling[0],CHAMBER.ceiling[3]]:[CHAMBER.ceiling[2],CHAMBER.ceiling[1]];
   for(let i=0;i<2;i++)assert.deepEqual(wallPoint(wall,i,0),roof[i]);
@@ -76,11 +77,11 @@ test('every row is installable and all device types render at every legal anchor
 test('roof and inner frame stay behind all installation rows while the outer rim stays in front',()=>{
  const s=initial();s.rat.visible=false;const scene=buildScene(s,[]);
  const floor=scene.findIndex(p=>p.owner==='Floor'),ceiling=scene.findIndex(p=>p.owner==='Box glass ceiling');
- assert.ok(ceiling<floor);
- for(const owner of ['left wall','right wall','Box frame'])assert.ok(scene.findLastIndex(p=>p.owner===owner)>floor);
+ assert.ok(floor<ceiling);
+ for(const owner of ['left wall','right wall','Box frame'])assert.ok(scene.findLastIndex(p=>p.owner===owner)<floor);
  const outer=scene.findIndex(p=>p.owner==='Box outer frame');
  const frameEnd=scene.findLastIndex(p=>p.owner==='Box frame');
- assert.ok(scene.filter(p=>p.owner.includes(' column ')).every(p=>scene.indexOf(p)>frameEnd&&scene.indexOf(p)<outer));
+ assert.ok(scene.filter(p=>p.owner.includes(' column ')).every(p=>scene.indexOf(p)>frameEnd&&scene.indexOf(p)>ceiling&&scene.indexOf(p)<outer));
 });
 
 test('lamps in consecutive installation rows have a visible gap instead of covering one another',()=>{

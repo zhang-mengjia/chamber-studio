@@ -1,5 +1,11 @@
 import {MODULES,occupant} from './model.js';
 
+// Preserve the grabbed row in the interior; at a wall edge, fit the complete
+// module to the nearest legal anchor instead of inventing an off-wall row.
+export function dragTarget(cell,module,grabRow=0) {
+  return cell?{...cell,row:Math.max(0,Math.min(8-MODULES[module.type].h,cell.row-grabRow))}:null;
+}
+
 // Insertions and moves are atomic: occupied destinations are never overwritten.
 export function insertModule(state,destination,module,source=null) {
   const next=structuredClone(state), {wall,col,row}=destination;
