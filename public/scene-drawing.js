@@ -1,7 +1,8 @@
 import {MODULES,defaultState,options,FLAVORS,VOLUMES} from './model.js';
 import {ratScene} from './rat-art.js';
 import {CHAMBER,WALLS,wallPoint} from './geometry.js';
-import {STYLE,REFERENCE,REFERENCE_SCALE,referencePoint,sourceWallPoint} from './illustration-style.js';
+import {STYLE,REFERENCE,APERTURES,REFERENCE_SCALE,referencePoint,sourceWallPoint} from './illustration-style.js';
+import {clipNativePath} from './path-clipping.js';
 
 const mapped=(ops,fn)=>ops.map(o=>({op:o.op,v:o.v.flatMap((_,i,a)=>i%2?[]:fn(a[i],a[i+1]))}));
 const ellipseOps=(x,y,rx,ry)=>{
@@ -12,10 +13,16 @@ const ellipseOps=(x,y,rx,ry)=>{
     {op:'C',v:[x-rx,y-k*ry,x-k*rx,y-ry,x,y-ry]},
     {op:'C',v:[x+k*rx,y-ry,x+rx,y-k*ry,x+rx,y]},{op:'Z',v:[]}];
 };
-const grille=REFERENCE.speaker.map(p=>({...p,ops:mapped(p.ops,(x,y)=>sourceWallPoint(x,y,'right'))}));
-const grillePoints=grille.flatMap(p=>p.ops.flatMap(o=>o.v));
+const grillePoints=REFERENCE.speaker.flatMap(p=>p.ops.flatMap(o=>o.v));
 const grilleX=grillePoints.filter((_,i)=>i%2===0),grilleY=grillePoints.filter((_,i)=>i%2===1);
 const grilleBox={x:Math.min(...grilleX),y:Math.min(...grilleY),w:Math.max(...grilleX)-Math.min(...grilleX),h:Math.max(...grilleY)-Math.min(...grilleY)};
+const grilleFront=REFERENCE.speaker.map(p=>({...p,ops:mapped(p.ops,(sx,sy)=>sourceWallPoint(sx,sy,'right'))}));
+const frontPoints=grilleFront.flatMap(p=>p.ops.flatMap(o=>o.v));
+const frontX=frontPoints.filter((_,i)=>i%2===0),frontY=frontPoints.filter((_,i)=>i%2===1);
+const frontBox={x:Math.min(...frontX),y:Math.min(...frontY),w:Math.max(...frontX)-Math.min(...frontX),h:Math.max(...frontY)-Math.min(...frontY)};
+const portPoints=REFERENCE.waterMount.flatMap(p=>p.ops.flatMap(o=>o.v.flatMap((_,i,a)=>i%2?[]:[sourceWallPoint(a[i],a[i+1],'left')])));
+const portBox={x:Math.min(...portPoints.map(p=>p[0])),y:Math.min(...portPoints.map(p=>p[1]))};
+portBox.w=Math.max(...portPoints.map(p=>p[0]))-portBox.x;portBox.h=Math.max(...portPoints.map(p=>p[1]))-portBox.y;
 
 // Every view and file format consumes these same flat fills and native curves.
 export function buildScene(state,_ratPaths,preview=false){
@@ -35,7 +42,7 @@ export function buildScene(state,_ratPaths,preview=false){
     const xy=(u,v)=>wallPoint(corners,u,v),point=(x,y)=>xy(x/6,y/8);
     const rect=(x,y,w,h,fill,stroke=STYLE.ink,sw=STYLE.line)=>poly([[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(p=>point(...p)),fill,stroke,sw);
     const oval=(x,y,rx,ry,fill,stroke=STYLE.ink,sw=STYLE.detail)=>add(mapped(ellipseOps(x,y,rx,ry),point),fill,stroke,sw);
-    const straight=Math.abs(corners[0][1]-corners[1][1])<1;
+    const straight=devices===null;
     owner=side+' wall';
     if(straight)poly(corners,STYLE.wall,STYLE.ink,1.5);
     else reference(side);
@@ -51,9 +58,10 @@ export function buildScene(state,_ratPaths,preview=false){
       owner=side+' '+def.en+' column '+(m.col+1)+' row '+(m.row+1);
       const a=point(x+1,y+.5),b=point(x+1,y+1.5),unit=Math.hypot(b[0]-a[0],b[1]-a[1]);
       if(m.type==='house'){
+        const lamp=point(x+.845,y+.535);
         if(ms==='on'&&state.effects){
           if(straight)oval(x+1,y+.5,.45,.38,STYLE.lamp,'none',0);
-          else add(ellipseOps(a[0]+(side==='left'?1:-1)*unit*.32,a[1],unit*.35,unit*.38),STYLE.lamp,'none',0);
+          else add(ellipseOps(lamp[0]+(side==='left'?1:-1)*unit*.32,lamp[1],unit*.35,unit*.38),STYLE.lamp,'none',0);
           scene.at(-1).opacity=.16;
         }
         if(straight){
@@ -61,14 +69,21 @@ export function buildScene(state,_ratPaths,preview=false){
           oval(x+1,y+.5,.27,.27,ms==='on'?STYLE.lamp:STYLE.charcoal);
           oval(x+.98,y+.36,.18,.07,ms==='on'?'#FCF7E5':STYLE.lens,'none',0);
         }else{
-          const k=unit*.62/10.87,sign=side==='left'?1:-1;
-          reference('house',(sx,sy)=>[a[0]+sign*(sx-174.87)*k,a[1]+(sy-135.83)*k],k,p=>({...p,
+          const k=unit*.96/10.87,sign=side==='left'?1:-1;
+          reference('house',(sx,sy)=>[lamp[0]+sign*(sx-174.87)*k,lamp[1]+(sy-135.83)*k],k,p=>({...p,
             fill:ms==='on'&&p.fill==='#000000'?STYLE.lamp:ms==='on'&&p.fill==='#97CDDE'?'#FCF7E5':p.fill}));
         }
       }else if(m.type==='speaker'){
         // The reference's 61 perforations remain 61 independently editable
         // cubic paths, projected into whichever wall carries the module.
-        for(const p of grille)add(mapped(p.ops,(u,v)=>point(x+.38+(u-grilleBox.x)/grilleBox.w*1.24,y+.2+(v-grilleBox.y)/grilleBox.h*1.6)),p.fill,'none',0);
+        if(straight){
+          // Remove the source side-wall projection when looking straight at
+          // that wall; perspective views retain the original screen silhouette.
+          for(const p of grilleFront)add(mapped(p.ops,(u,v)=>point(x+.08+(u-frontBox.x)/frontBox.w*1.84,y+.1+(v-frontBox.y)/frontBox.h*1.8)),p.fill,'none',0);
+        }else{
+          const center=point(x+1,y+1),k=unit*1.82/grilleBox.h,sign=side==='right'?1:-1;
+          reference('speaker',(sx,sy)=>[center[0]+sign*(sx-grilleBox.x-grilleBox.w/2)*k,center[1]+(sy-grilleBox.y-grilleBox.h/2)*k],k);
+        }
         if(ms==='playing'&&state.effects){
           const pts=Array.from({length:49},(_,i)=>{
             const t=i/48,wave=opt.sound==='clicker'?(i%12<2?.12:-.04):opt.sound==='siren'?.12*Math.sin(t*t*32):opt.sound==='white'?.1*Math.sin(i*73.37)*Math.cos(i*18.7):.1*Math.sin(t*25.13);
@@ -81,24 +96,43 @@ export function buildScene(state,_ratPaths,preview=false){
         if(ms==='extended'){
           if(straight)poly([[x+.62,y+.46],[x+1.38,y+.46],[x+1.56,y+.8],[x+.44,y+.8]].map(p=>point(...p)),STYLE.metal,STYLE.ink,STYLE.detail);
           else{
-            const k=unit*.35/7.07,sign=side==='right'?1:-1;
-            reference('lever',(sx,sy)=>[a[0]+sign*(sx-285.07)*k,a[1]+(sy-198.57)*k],k);
+            const lever=point(x+1,y+.42),k=unit*.55/7.07,sign=side==='right'?1:-1;
+            reference('lever',(sx,sy)=>[lever[0]+sign*(sx-285.07)*k,lever[1]+(sy-198.57)*k],k);
           }
         }else rect(x+.6,y+.46,.8,.035,STYLE.metal,STYLE.ink,.6);
       }else if(m.type==='water'||m.type==='food'){
-        rect(x+.71,y+.2,.65,1.58,'#CCCBC7',STYLE.ink,STYLE.line);
-        // A narrow recessed opening and the original cup curves replace the
-        // former large dark mounting plate and blue metal highlights.
-        const cup=point(x+1.04,y+1.65),k=unit*.32/8;
-        reference('waterCup',(sx,sy)=>[cup[0]+(sx-163.39)*k,cup[1]+(sy-196.91)*k],k,p=>{
-          if(p.fill!=='#68A7D9')return p;
-          // The visible pool expands with volume. Its amount is schematic,
-          // rather than an inferred physical depth or cup capacity.
-          const size=.6+.08*VOLUMES.indexOf(opt.volume);
-          return {...p,fill:m.type==='water'&&ms==='full'?STYLE.water:STYLE.wall,opacity:1,
-            ops:mapped(p.ops,(sx,sy)=>[163.4+(sx-163.4)*size,197.32+(sy-197.32)*size])};
-        });
-        if(m.type==='food'&&ms==='full')for(const [dx,dy]of [[-.07,.02],[.05,.04],[.12,-.015]])add(ellipseOps(cup[0]+unit*dx,cup[1]+unit*dy,unit*.047,unit*.03),FLAVORS[opt.flavor].color,'#8E8174',.6);
+        const size=.6+.08*VOLUMES.indexOf(opt.volume);
+        if(straight){
+          const cy=y+def.h-.4;
+          rect(x+.35,y+.1,1.3,def.h-.24,STYLE.wall);
+          oval(x+1,cy+.13,.52,.12,STYLE.floor);
+          oval(x+1,cy,.52,.16,STYLE.wall);
+          if(m.type==='water'&&ms==='full')oval(x+1,cy-.015,.44*size,.1*size,STYLE.water,STYLE.ink,.65);
+          if(m.type==='food'&&ms==='full')for(const [dx,dy]of [[-.24,0],[0,-.025],[.24,.015]])oval(x+1+dx,cy+dy,.055,.04,FLAVORS[opt.flavor].color,'#8E8174',.55);
+        }else{
+          // The mount, recessed cup, liquid and food share one template frame.
+          // Retain the original SVG aperture as native clipped curves, so the
+          // cup remains inside the wall in PPT/PDF as well as the browser.
+          const portPoint=(sx,sy)=>{
+            const [u,v]=sourceWallPoint(sx,sy,'left'),local=.51+(u-portBox.x)/portBox.w*1.38;
+            return point(x+(side==='left'?local:2-local),y+.1+(v-portBox.y)/portBox.h*(def.h-.24));
+          };
+          reference('waterMount',portPoint);
+          const aperture=p=>{
+            const clipped=clipNativePath(p.ops,APERTURES.waterCup);
+            if(clipped.fillOps.length)add(mapped(clipped.fillOps,portPoint),p.fill,'none',0,{opacity:p.opacity});
+            if(p.stroke!=='none'&&p.sw)for(const ops of clipped.strokeOps)add(mapped(ops,portPoint),'none',p.stroke,p.sw*REFERENCE_SCALE,{opacity:p.opacity});
+          };
+          for(const original of REFERENCE.waterCup){
+            let p={...original};
+            if(p.fill==='#68A7D9'){
+              p={...p,fill:m.type==='water'&&ms==='full'?STYLE.water:STYLE.wall,
+                ops:mapped(p.ops,(sx,sy)=>[163.4+(sx-163.4)*size,197.32+(sy-197.32)*size])};
+            }
+            aperture(p);
+          }
+          if(m.type==='food'&&ms==='full')for(const [dx,dy]of [[.8,.2],[1.8,-.15],[2.8,.35]])aperture({ops:ellipseOps(164.2+dx,197.3+dy,.5,.35),fill:FLAVORS[opt.flavor].color,stroke:'#8E8174',sw:.15,opacity:1});
+        }
       }else if(m.type==='nose'){
         oval(x+1,y+.5,.31,.3,ms==='on'?STYLE.lamp:STYLE.metal,STYLE.ink,STYLE.line);
         oval(x+1,y+.5,.23,.23,STYLE.charcoal,STYLE.ink,.65);
@@ -135,10 +169,11 @@ export function buildScene(state,_ratPaths,preview=false){
   }
   function perspective(){
     owner='Box back';reference('back');
-    floor();
     const devices=[];wall(WALLS.perspective.left,'left',devices);wall(WALLS.perspective.right,'right',devices);
-    owner='Box glass ceiling';reference('ceiling');
     owner='Box frame';reference('leftTrim');reference('rightTrim');
+    // The source floor overlays the side-panel extensions at the rear corners.
+    floor();
+    owner='Box glass ceiling';reference('ceiling');
     scene.push(...devices);
     owner='Box outer frame';reference('frame');
     if(state.rat.visible)scene.push(...ratScene(state.rat));

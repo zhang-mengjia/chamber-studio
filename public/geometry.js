@@ -1,15 +1,21 @@
 import {MODULES, occupant} from './model.js';
-import {referencePoint,SOURCE_WALLS} from './illustration-style.js';
+import {referencePoint,REFERENCE_HEIGHT} from './illustration-style.js';
 
 export const CHAMBER = {
-  bounds:{x:336,y:61,width:608,height:608},
+  bounds:{x:336,y:61,width:608,height:REFERENCE_HEIGHT},
   ceiling:[[152.95,118.97],[300.59,118.97],[273.45,101.24],[180.09,101.24]].map(p=>referencePoint(...p)),
   back:[[180.09,101.24],[273.45,101.24],[273.45,200.01],[180.09,200.01]].map(p=>referencePoint(...p)),
   floor:[[180.09,200.02],[273.45,200.02],[300.59,235.7],[152.95,235.7]].map(p=>referencePoint(...p)),
   sill:[[149.39,235.7],[304.15,235.7],[304.15,238.91],[149.39,238.91]].map(p=>referencePoint(...p))
 };
 export const WALLS = {
-  perspective: Object.fromEntries(Object.entries(SOURCE_WALLS).map(([side,points])=>[side,points.map(p=>referencePoint(...p))])),
+  // The sloping strip above the front roof edge is glass, not installation
+  // space. Rear wall feet meet the visible floor at 200.02, rather than the
+  // source side-panel extension hidden underneath that floor.
+  perspective: {
+    left:[[152.95,118.97],[180.09,118.97],[180.09,200.02],[152.95,235.7]].map(p=>referencePoint(...p)),
+    right:[[273.45,118.97],[300.59,118.97],[300.59,235.7],[273.45,200.02]].map(p=>referencePoint(...p))
+  },
   front: {left:[[230,85],[570,85],[570,565],[230,565]], right:[[750,85],[1090,85],[1090,565],[750,565]]}
 };
 export function wallPoint(corners,u,v) {

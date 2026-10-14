@@ -84,14 +84,14 @@ test('wall devices stay in front of the inner frame and behind the outer frame a
   if(view==='perspective')assert.deepEqual(sceneBounds(scene),CHAMBER.bounds);
  }
 });
-test('reference perspective keeps vertical front posts and a tight square export viewport',()=>{
+test('reference perspective keeps its original aspect ratio and tight export viewport',()=>{
  for(const floor of ['plain','bars','acrylic'])for(const visible of [false,true]){
   const s=initial();s.floor=floor;s.rat.visible=visible;
   const scene=buildScene(s,[]),box=sceneBounds(scene);
-  assert.deepEqual(box,CHAMBER.bounds);assert.equal(box.width,box.height);
+  assert.deepEqual(box,CHAMBER.bounds);assert.ok(Math.abs(box.width/box.height-155.26/138.17)<1e-9);
   for(const side of ['left','right']){const corners=WALLS.perspective[side],edge=side==='left'?[corners[0],corners[3]]:[corners[1],corners[2]];assert.equal(edge[0][0],edge[1][0]);}
-  assert.match(sceneToSVG(scene,true),/width="608" height="608" viewBox="336 61 608 608"/);
-  assert.match(sceneToSVG(scene,false),/<rect x="336" y="61" width="608" height="608" fill="white"\/>/);
+  assert.ok(sceneToSVG(scene,true).includes(`width="608" height="${box.height}" viewBox="336 61 608 ${box.height}"`));
+  assert.ok(sceneToSVG(scene,false).includes(`<rect x="336" y="61" width="608" height="${box.height}" fill="white"/>`));
  }
 });
 test('tight bounds include painted stroke widths and actual Bezier extrema, ignoring invisible paths',()=>{

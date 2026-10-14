@@ -2,9 +2,10 @@
 
 The project uses the chamber illustration supplied in `example.pptx` as its
 style reference: warm gray walls, a pale rear wall, thin dark outlines, a narrow
-front rim, understated glass and flat device colors. The chamber keeps its
-608 × 608 drawing bounds. The reference roof and camera replace the previous
-blue reflective panels; the roof's two outside corners remain transparent.
+front rim, understated glass and flat device colors. The chamber preserves the
+reference's approximately 1.124:1 width-to-height ratio, with 608 × 541.075 drawing
+bounds. One scale is used in both axes. The roof's two outside corners remain
+transparent.
 
 `public/assets/reference-parts.json` contains the original chamber SVG paths,
 separated into shell, rim, lamp, speaker, lever and cup components. It records
@@ -13,7 +14,11 @@ is unchanged. `public/illustration-style.js` defines the shared palette and
 projection, and `public/scene-drawing.js` places these components in all views.
 Ports, cue lights, nose pokes, cameras, floor patterns and effects use the same
 palette and line weights. Installation cells remain interactive on continuous
-wall panels; the grid is optional.
+wall panels below the horizontal front roof edge; the grid is optional. The floor
+covers the side-panel extensions at the rear seams, following the source layer
+order. Recessed cups, liquid and pellets share their mounting panel's transform;
+the original aperture is retained as clipped native curves without artificial
+cut-edge outlines in SVG, PDF and PowerPoint.
 
 All five Long–Evans rat poses have been redrawn from the owner's supplied pose
 artwork into cubic vector paths with muted black, white and pale pink fills.

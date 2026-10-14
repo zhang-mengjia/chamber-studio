@@ -34,7 +34,7 @@ Choose a plain floor, metal bars or perforated acrylic. Click the black-and-whit
 
 - **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a device or rat to edit its individual curves and fills.
 - **PDF / SVG:** vector chamber and rat paths, cropped to the drawing bounds. SVG works independently of the website.
-- **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber has square drawing bounds and exports at 608 × 608, 1216 × 1216 or 1824 × 1824 without exterior padding.
+- **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber preserves the reference's approximately 1.124:1 proportions and exports at 608 × 542, 1216 × 1083 or 1824 × 1624 without exterior padding.
 - **Copy image:** copies the same cropped PNG to the clipboard for pasting into documents, slides or messages. Uses the current PNG resolution and transparency settings; requires clipboard access in a supported browser on HTTPS or localhost.
 - **Configuration:** portable JSON includes modules, parameters, rat, floor and view settings.
 
