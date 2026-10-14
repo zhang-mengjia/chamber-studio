@@ -179,9 +179,10 @@
       "left",
       "right"
     ],
-    "artwork": "transparent PNG"
+    "artwork": "native cubic paths"
   },
   "examples": [
+    "reference",
     "dual-water",
     "operant",
     "empty"
@@ -243,6 +244,7 @@
               "floor": {
                 "type": "string",
                 "enum": [
+                  "plain",
                   "bars",
                   "acrylic"
                 ]
@@ -2003,6 +2005,7 @@
                         "floor": {
                           "type": "string",
                           "enum": [
+                            "plain",
                             "bars",
                             "acrylic"
                           ]
@@ -2103,6 +2106,7 @@
           "name": {
             "type": "string",
             "enum": [
+              "reference",
               "dual-water",
               "operant",
               "empty"
@@ -2146,7 +2150,7 @@
     },
     {
       "name": "chamber_export",
-      "description": "Export a snapshot of the current chamber. Returns a base64 file by default; download=true triggers a browser download and returns metadata. JSON retains configuration and pose. SVG/PDF retain vector chamber geometry and embed the rat PNG; PPTX has editable native chamber shapes and an embedded rat picture. PNG scale is 1, 2 or 3. Includes rat artwork attribution.",
+      "description": "Export a snapshot of the current chamber. Returns a base64 file by default; download=true triggers a browser download and returns metadata. JSON retains configuration and pose. SVG/PDF retain vector chamber and rat paths; PPTX has editable native shapes grouped by device and rat. PNG scale is 1, 2 or 3. Includes rat artwork attribution.",
       "inputSchema": {
         "type": "object",
         "properties": {

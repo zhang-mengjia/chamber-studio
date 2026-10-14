@@ -130,7 +130,7 @@ test('calls are ordered across asynchronous loads, arguments are captured on arr
   assert.equal((await broken.api.callTool('chamber_load_example',{name:'empty'})).error.code,'EXAMPLE_FAILED');
 });
 
-test('JSON and self-contained SVG exports retain original rat pixels, attribution and state/history', async context => {
+test('JSON and self-contained SVG exports retain editable rat paths, attribution and state/history', async context => {
   context.mock.method(globalThis,'fetch',async source=>new Response(await fs.readFile(new URL('../public/'+source.replace(/^\.\//,''),import.meta.url))));
   const {api,commits}=setup(); const original=api.getState();
   const json=await api.callTool('chamber_export',{format:'json'});
@@ -141,8 +141,10 @@ test('JSON and self-contained SVG exports retain original rat pixels, attributio
   assert.equal(svg.result.size,Buffer.from(svg.result.data,'base64').length);
   assert.match(Buffer.from(svg.result.data,'base64').toString(),/^<svg /);
   assert.doesNotMatch(Buffer.from(svg.result.data,'base64').toString(),/interaction-layer|selection-outline/);
-  const image=Buffer.from(svg.result.data,'base64').toString().match(/href="data:image\/png;base64,([^"]+)"/);
-  assert.ok(image);assert.deepEqual(Buffer.from(image[1],'base64'),await fs.readFile(new URL('../public/assets/rats/stand.png',import.meta.url)));
+  const drawing=Buffer.from(svg.result.data,'base64').toString();
+  assert.doesNotMatch(drawing,/<image\b|data:image|href=/);
+  assert.ok((drawing.match(/data-owner="Rat"/g)||[]).length>10);
+  assert.match(drawing,/fill="#F5F5F3"/);
   assert.equal(svg.result.attribution.license,'CC BY 4.0'); assert.deepEqual(api.getState(),original); assert.equal(commits(),0);
   const invalid=await api.callTool('chamber_export',{format:'png',scale:0}); assert.equal(invalid.error.code,'INVALID_ARGUMENT');
   const failure=setup({makeArtifact:async()=>{throw Error('template unavailable');}});

@@ -15,7 +15,7 @@ test('all literal translated interface strings have English entries',async()=>{
   for(const key of keys)if(/[\u4e00-\u9fff]/.test(key))assert.ok(Object.hasOwn(english,key),`Missing translation: ${key}`);
 });
 test('shipped examples validate and round-trip without loss',async()=>{
-  for(const file of ['dual-water','operant','empty']){
+  for(const file of ['reference','dual-water','operant','empty']){
     const raw=JSON.parse(await fs.readFile(new URL(`../public/examples/${file}.chamber.json`,import.meta.url),'utf8'));
     assert.deepEqual(validate(raw),raw);
   }

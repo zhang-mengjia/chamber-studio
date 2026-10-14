@@ -2,7 +2,7 @@ import {MODULES, POSES, LEGACY_POSES, STATES, FLAVORS, SOUNDS, VOLUMES, defaultS
 
 export const API_VERSION = '1.0.0';
 export const FORMATS = ['json', 'svg', 'png', 'pdf', 'pptx'];
-export const EXAMPLES = ['dual-water', 'operant', 'empty'];
+export const EXAMPLES = ['reference', 'dual-water', 'operant', 'empty'];
 const object = (properties, required = [], extra = {}) => ({type:'object', properties, required, additionalProperties:false, ...extra});
 const choice = values => ({type:'string', enum:values});
 const number = (minimum, maximum, type = 'number') => ({type, minimum, maximum});
@@ -20,7 +20,7 @@ const ratProperties = {
   visible:boolean, scale:number(.45,1.7), x:number(200,1050), y:number(250,660)
 };
 const settings = {
-  name:{type:'string', minLength:1, maxLength:80}, floor:choice(['bars','acrylic']),
+  name:{type:'string', minLength:1, maxLength:80}, floor:choice(['plain','bars','acrylic']),
   view:choice(['perspective','front','combined']), grid:boolean, dimensions:boolean, effects:boolean,
   rat:object(ratProperties, [], {minProperties:1})
 };
@@ -64,7 +64,7 @@ export const TOOLS = [
   tool('chamber_load_example', 'Replace the layout with a bundled example. The change can be undone.', object({name:choice(EXAMPLES)}, ['name'])),
   tool('chamber_undo', 'Undo one layout change and return the restored configuration.', object({})),
   tool('chamber_redo', 'Redo one layout change and return the restored configuration.', object({})),
-  tool('chamber_export', 'Export a snapshot of the current chamber. Returns a base64 file by default; download=true triggers a browser download and returns metadata. JSON retains configuration and pose. SVG/PDF retain vector chamber geometry and embed the rat PNG; PPTX has editable native chamber shapes and an embedded rat picture. PNG scale is 1, 2 or 3. Includes rat artwork attribution.', object({
+  tool('chamber_export', 'Export a snapshot of the current chamber. Returns a base64 file by default; download=true triggers a browser download and returns metadata. JSON retains configuration and pose. SVG/PDF retain vector chamber and rat paths; PPTX has editable native shapes grouped by device and rat. PNG scale is 1, 2 or 3. Includes rat artwork attribution.', object({
     format:choice(FORMATS), scale:{type:'integer', enum:[1,2,3], default:2},
     transparent:{...boolean, default:true}, download:{...boolean, default:false}
   }, ['format']))
@@ -84,7 +84,7 @@ export function manifest() {
     modules:Object.fromEntries(Object.entries(MODULES).map(([type,m]) => [type, {
       name:m.en, width:2, height:m.h, states:Object.keys(STATES[type]), defaultState:defaultState(type), options:options[type] || {}
     }])),
-    rat:{poses:Object.keys(POSES),legacyPoses:LEGACY_POSES,facing:['left','right'],artwork:'transparent PNG'},
+    rat:{poses:Object.keys(POSES),legacyPoses:LEGACY_POSES,facing:['left','right'],artwork:'native cubic paths'},
     examples:EXAMPLES, formats:FORMATS, tools:TOOLS
   };
 }

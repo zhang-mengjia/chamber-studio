@@ -18,7 +18,7 @@ function dataURL(bytes){
   for(let i=0;i<bytes.length;i+=32768)binary+=String.fromCharCode(...bytes.subarray(i,i+32768));
   return 'data:image/png;base64,'+btoa(binary);
 }
-// Embed original PNG bytes so SVG/PNG exports also work away from the website.
+// Embed any pictures in custom scenes so SVG/PNG also work away from the site.
 export async function svgBlob(scene,transparent=true){
   const embedded=await Promise.all(scene.map(async s=>s.image?{...s,image:dataURL(await imageBytes(s.image))}:s));
   return new Blob([sceneToSVG(embedded,transparent)],{type:'image/svg+xml'});

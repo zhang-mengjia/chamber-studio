@@ -15,6 +15,7 @@
     "floor": {
       "type": "string",
       "enum": [
+        "plain",
         "bars",
         "acrylic"
       ]

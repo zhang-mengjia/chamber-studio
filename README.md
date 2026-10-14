@@ -30,11 +30,11 @@ Try **Examples** for dual water wells, an operant chamber or an empty chamber. L
 | Speaker | 2 × 2 | Silent / playing; Clicker, Siren, White noise, Pure tone |
 | Camera | 2 × 1 | Off / recording |
 
-Choose metal bars or perforated transparent acrylic for the floor. Click the black-and-white Long–Evans rat to choose standing, walking, rearing, sniffing or sitting from five artwork thumbnails; move, scale, mirror or hide it. The supplied transparent PNGs keep their original ivory fur and coral skin, with a shared floor anchor across poses. Blue glass reflections, silver wall panels and shaded metal bars follow the poster illustration style. Perspective, front-wall and combined views share one vector drawing engine, including the editable shading and reflections.
+Choose a plain floor, metal bars or perforated acrylic. Click the black-and-white Long–Evans rat to choose standing, walking, rearing, sniffing or sitting; move, scale, mirror or hide it. All five poses are native vector drawings with muted black and white fur, pale pink skin and shared floor anchors. Warm gray wall panels, thin dark outlines and understated glass follow the supplied reference illustration. Original shell, lamp, grille, lever and cup curves are reused across perspective, front-wall and combined views. See the [drawing style and editable sample](docs/illustration-style.md).
 
-- **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a component to edit its parts. The rat is an embedded transparent picture you can move, resize, crop or replace; its internal artwork is raster.
-- **PDF / SVG:** vector chamber paths and text with the rat PNG embedded, cropped to the drawing bounds. SVG embeds the image bytes and works independently of the website.
-- **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber has straight outer edges and exports at 608 × 608, 1216 × 1216 or 1824 × 1824 without exterior padding.
+- **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a device or rat to edit its individual curves and fills.
+- **PDF / SVG:** vector chamber and rat paths, cropped to the drawing bounds. SVG works independently of the website.
+- **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber has square drawing bounds and exports at 608 × 608, 1216 × 1216 or 1824 × 1824 without exterior padding.
 - **Copy image:** copies the same cropped PNG to the clipboard for pasting into documents, slides or messages. Uses the current PNG resolution and transparency settings; requires clipboard access in a supported browser on HTTPS or localhost.
 - **Configuration:** portable JSON includes modules, parameters, rat, floor and view settings.
 

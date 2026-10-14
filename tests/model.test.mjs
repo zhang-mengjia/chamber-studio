@@ -6,12 +6,22 @@ import {insertModule,UndoHistory} from '../public/editor.js';
 import {CHAMBER,WALLS,wallRegions,contains} from '../public/geometry.js';
 import {ratScene} from '../public/rat-art.js';
 import assets from '../public/assets/rats/poses.json' with {type:'json'};
+import {STYLE,REFERENCE} from '../public/illustration-style.js';
+test('reference grille curves stay editable and water quantities produce different visible pools',()=>{
+ const s=initial();s.rat.visible=false;s.effects=false;s.walls={left:[{col:1,row:2,type:'speaker',state:'silent'}],right:[{col:1,row:4,type:'water',state:'full',volume:10}]};
+ const grille=buildScene(s,[]).filter(p=>p.owner.includes('Speaker column'));
+ assert.equal(grille.length,REFERENCE.speaker.length);assert.equal(grille.length,61);
+ assert.ok(grille.every(p=>p.ops.some(o=>o.op==='C')&&!p.image));
+ const pool=volume=>{s.walls.right[0].volume=volume;return sceneBounds(buildScene(s,[]).filter(p=>p.owner.includes('Water well column')&&p.fill===STYLE.water));};
+ const small=pool(10),large=pool(160);assert.ok(large.width>small.width&&large.height>small.height);
+ s.walls.right[0].state='empty';assert.equal(buildScene(s,[]).filter(p=>p.owner.includes('Water well column')&&p.fill===STYLE.water).length,0);
+});
 test('two-row modules reject overflow and collision without changing the original',()=>{let s=initial();const before=JSON.stringify(s);assert.throws(()=>place(s,'left',1,7,'food'),/超出/);assert.throws(()=>place(s,'left',0,4,'speaker'),/占用/);assert.equal(JSON.stringify(s),before);});
 test('clicking lower half replaces or removes the entire module',()=>{let s=initial();s=place(s,'left',0,6,'nose');assert.equal(occupant(s.walls.left,0,5).type,'nose');assert.equal(occupant(s.walls.left,0,6),undefined);s=place(s,'left',0,5,'blank');assert.equal(occupant(s.walls.left,0,5),undefined);});
 test('all eight module types fit expected units and preserve states and options in configuration',()=>{let s=initial();s.walls={left:[],right:[]};let row=0;for(const type of Object.keys(MODULES)){const side=row>=8?'right':'left';const r=row>=8?row-8:row;s=place(s,side,0,r,type);row+=MODULES[type].h;}s.walls.left[0].flavor='strawberry';s.walls.left[1].volume=160;s.floor='acrylic';const next=validate(JSON.parse(JSON.stringify(s)));assert.equal(next.floor,'acrylic');assert.equal(next.walls.left[0].flavor,'strawberry');assert.equal(next.walls.left[1].volume,160);assert.equal(next.walls.right.at(-1).type,'camera');});
 test('invalid configurations reject overlaps, unknown types, states and amounts',()=>{let s=initial();s.walls.left.push({col:0,row:6,type:'camera'});assert.throws(()=>validate(s),/重叠/);s=initial();s.walls.left[0].state='exploded';assert.throws(()=>validate(s),/状态/);s=initial();s.walls.left[1].volume=25;assert.throws(()=>validate(s),/参数/);});
-test('every module state, view and floor generates finite vector geometry',()=>{for(const type of Object.keys(MODULES))for(const status of Object.keys(STATES[type]))for(const view of ['front','perspective','combined'])for(const floor of ['bars','acrylic']){let s=initial();s.walls={left:[{type,col:0,row:1,state:status}],right:[]};s.view=view;s.floor=floor;for(const item of buildScene(s,[])){if(item.ops)assert.ok(item.ops.every(o=>o.v.every(Number.isFinite)));}}});
-test('static flashing export retains a lit face without adding labels',()=>{const s=initial();s.walls.left[0].state='flashing';s.walls.left[0].hz=2;const scene=buildScene(s,[]);assert.ok(scene.every(x=>x.text===undefined));assert.ok(scene.some(x=>x.fill==='#fff7c4'));});
+test('every module state, view and floor generates finite vector geometry',()=>{for(const type of Object.keys(MODULES))for(const status of Object.keys(STATES[type]))for(const view of ['front','perspective','combined'])for(const floor of ['plain','bars','acrylic']){let s=initial();s.walls={left:[{type,col:0,row:1,state:status}],right:[]};s.view=view;s.floor=floor;for(const item of buildScene(s,[])){if(item.ops)assert.ok(item.ops.every(o=>o.v.every(Number.isFinite)));}}});
+test('static flashing export retains a lit face without adding labels',()=>{const s=initial();s.walls.left[0].state='flashing';s.walls.left[0].hz=2;const scene=buildScene(s,[]);assert.ok(scene.every(x=>x.text===undefined));assert.ok(scene.some(x=>x.fill===STYLE.lamp));});
 test('moving and copying preserves options, rejects collisions atomically, and permits overlapping self moves',()=>{
  const s=initial();const m=s.walls.left.find(m=>m.type==='water');Object.assign(m,{state:'full',volume:160});const original=JSON.stringify(s);
  const moved=insertModule(s,{wall:'right',col:0,row:3},m,{wall:'left',col:0,row:5});assert.equal(occupant(moved.walls.right,0,4).volume,160);assert.equal(occupant(moved.walls.left,0,5),undefined);
@@ -34,25 +44,28 @@ test('all five rat poses survive configuration round-trips and legacy poses migr
  }
  const invalid=initial();invalid.rat.pose='missing';assert.throws(()=>validate(invalid),/素材/);
 });
-test('pose changes share a floor anchor, mirror hit targets and retain finite geometry in both rat views',()=>{
+test('all rat poses render native curves, share floor anchors and mirror in every exported rat view',()=>{
  for(const pose of Object.keys(POSES))for(const scale of [.45,1,1.7]){
-  const r={...initial().rat,pose,scale},a=ratScene(r)[0],b=ratScene({...r,facing:'left'})[0];
-  const asset=assets[pose],k=a.width/asset.crop.width;
-  assert.ok(Math.abs(a.y+(asset.feetY-asset.crop.y)*k-(r.y+35*scale))<1e-9);
-  assert.deepEqual(sceneBounds([a]),sceneBounds([b]));assert.equal(b.flip,true);
-  for(let i=0;i<a.hitOps.length-1;i++){
-   assert.ok(Math.abs(a.hitOps[i].v[0]+b.hitOps[i].v[0]-2*r.x)<1e-9);
-   assert.equal(a.hitOps[i].v[1],b.hitOps[i].v[1]);
+  const r={...initial().rat,pose,scale},a=ratScene(r),b=ratScene({...r,facing:'left'}),asset=assets[pose];
+  assert.equal(a.length,asset.paths.length);assert.ok(a.length>10);assert.ok(a.every(p=>!p.image));
+  const point=a[0].ops[0].v,source=asset.paths[0].ops[0].v;
+  assert.ok(Math.abs(point[1]-(r.y+35*scale)-(source[1]-asset.feetY)*.265*scale)<1e-9);
+  const boxA=sceneBounds(a),boxB=sceneBounds(b);
+  assert.equal(boxA.width,boxB.width);assert.equal(boxA.height,boxB.height);
+  assert.ok(Math.abs(boxA.x+boxB.x+boxA.width-2*r.x)<1e-8);
+  for(let part=0;part<a.length;part++)for(let i=0;i<a[part].ops.length;i++)for(let j=0;j<a[part].ops[i].v.length;j+=2){
+   assert.ok(Math.abs(a[part].ops[i].v[j]+b[part].ops[i].v[j]-2*r.x)<1e-9);
+   assert.equal(a[part].ops[i].v[j+1],b[part].ops[i].v[j+1]);
   }
   for(const view of ['perspective','combined']){
-   const s={...initial(),view,rat:r},image=buildScene(s,[]).find(p=>p.image);
-   assert.ok([image.x,image.y,image.width,image.height].every(Number.isFinite));
-   assert.ok(image.hitOps.every(o=>o.v.every(Number.isFinite)));
-   assert.match(sceneToSVG([image],true),new RegExp(`assets/rats/${pose}\\.png`));
+   const rat=buildScene({...initial(),view,rat:r},[]).filter(p=>p.owner==='Rat');
+   assert.equal(rat.length,a.length);assert.equal(rat.filter(p=>p.hitOps).length,1);
+   assert.ok(rat.every(p=>p.ops.every(o=>o.v.every(Number.isFinite))));
+   assert.doesNotMatch(sceneToSVG(rat,true),/<image\b|href=/);
   }
  }
- assert.equal(buildScene({...initial(),view:'front'},[]).filter(p=>p.image).length,0);
- assert.equal(buildScene({...initial(),rat:{...initial().rat,visible:false}},[]).filter(p=>p.image).length,0);
+ assert.equal(buildScene({...initial(),view:'front'},[]).filter(p=>p.owner==='Rat').length,0);
+ assert.equal(buildScene({...initial(),rat:{...initial().rat,visible:false}},[]).filter(p=>p.owner==='Rat').length,0);
 });
 test('static exports contain no editor hit areas or selection outlines',()=>{const s=initial();for(const view of ['perspective','front','combined']){s.view=view;assert.ok(buildScene(s,[]).every(p=>p.fill!=='transparent'&&!p.owner?.includes('selection')));}});
 test('wall devices stay in front of the inner frame and behind the outer frame and rat',()=>{
@@ -71,8 +84,8 @@ test('wall devices stay in front of the inner frame and behind the outer frame a
   if(view==='perspective')assert.deepEqual(sceneBounds(scene),CHAMBER.bounds);
  }
 });
-test('perspective chamber has straight square outer edges and a tight export viewport',()=>{
- for(const floor of ['bars','acrylic'])for(const visible of [false,true]){
+test('reference perspective keeps vertical front posts and a tight square export viewport',()=>{
+ for(const floor of ['plain','bars','acrylic'])for(const visible of [false,true]){
   const s=initial();s.floor=floor;s.rat.visible=visible;
   const scene=buildScene(s,[]),box=sceneBounds(scene);
   assert.deepEqual(box,CHAMBER.bounds);assert.equal(box.width,box.height);

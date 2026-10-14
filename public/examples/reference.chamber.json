@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "name": "Reference layout",
+  "floor": "plain",
+  "effects": false,
+  "walls": {
+    "left": [
+      {
+        "col": 2,
+        "row": 2,
+        "type": "house",
+        "state": "off",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      },
+      {
+        "col": 1,
+        "row": 4,
+        "type": "water",
+        "state": "full",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      }
+    ],
+    "right": [
+      {
+        "col": 1,
+        "row": 1,
+        "type": "speaker",
+        "state": "silent",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      },
+      {
+        "col": 1,
+        "row": 6,
+        "type": "lever",
+        "state": "extended",
+        "flavor": "grain",
+        "sound": "pure",
+        "volume": 20,
+        "hz": 1
+      }
+    ]
+  },
+  "rat": {
+    "pose": "nose",
+    "facing": "right",
+    "visible": true,
+    "scale": 0.88,
+    "x": 650,
+    "y": 535
+  },
+  "view": "perspective",
+  "labels": false,
+  "grid": false,
+  "dimensions": false
+}
