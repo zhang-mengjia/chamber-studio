@@ -30,11 +30,11 @@ Try **Examples** for dual water wells, an operant chamber or an empty chamber. L
 | Speaker | 2 × 2 | Silent / playing; Clicker, Siren, White noise, Pure tone |
 | Camera | 2 × 1 | Off / recording |
 
-Choose a plain floor, metal bars or perforated acrylic. Click the black-and-white Long–Evans rat to choose standing, walking, rearing, sniffing or sitting; move, scale, mirror or hide it. All five poses are native vector drawings with muted black and white fur, pale pink skin and shared floor anchors. Warm gray wall panels, thin dark outlines and understated glass follow the supplied reference illustration. Original shell, lamp, grille, lever and cup curves are reused across perspective, front-wall and combined views. See the [drawing style and editable sample](docs/illustration-style.md).
+Choose a plain floor, metal bars or perforated acrylic. Click the black-and-white Long–Evans rat to choose standing, walking, rearing, sniffing or sitting; move, scale, mirror or hide it. All five poses are native vector drawings with muted black and white fur, pale pink skin and shared floor anchors. Warm gray wall panels, thin dark outlines and understated glass follow the supplied reference illustration. Lamp, grille, lever and cup curves are reused; the shell retains the original camera and full-height installation planes. All eight rows are installable. Single-row modules have a 2:1 width-to-height ratio and two-row modules are square before perspective projection. See the [drawing style and editable sample](docs/illustration-style.md).
 
 - **PowerPoint:** native editable vector shapes and text, grouped by component. Enter or ungroup a device or rat to edit its individual curves and fills.
 - **PDF / SVG:** vector chamber and rat paths, cropped to the drawing bounds. SVG works independently of the website.
-- **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber preserves the reference's approximately 1.124:1 proportions and exports at 608 × 542, 1216 × 1083 or 1824 × 1624 without exterior padding.
+- **PNG:** 1×, 2× or 3× the cropped drawing size, optionally transparent. The perspective chamber retains its original square frame and exports at 608 × 608, 1216 × 1216 or 1824 × 1824 without exterior padding.
 - **Copy image:** copies the same cropped PNG to the clipboard for pasting into documents, slides or messages. Uses the current PNG resolution and transparency settings; requires clipboard access in a supported browser on HTTPS or localhost.
 - **Configuration:** portable JSON includes modules, parameters, rat, floor and view settings.
 

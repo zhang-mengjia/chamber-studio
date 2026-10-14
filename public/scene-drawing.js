@@ -1,7 +1,7 @@
 import {MODULES,defaultState,options,FLAVORS,VOLUMES} from './model.js';
 import {ratScene} from './rat-art.js';
-import {CHAMBER,WALLS,wallPoint,installationPoint} from './geometry.js';
-import {STYLE,REFERENCE,APERTURES,REFERENCE_SCALE,referencePoint,sourceWallPoint} from './illustration-style.js';
+import {CHAMBER,WALLS,WALL_UNITS,wallPoint} from './geometry.js';
+import {STYLE,REFERENCE,APERTURES,REFERENCE_SCALE,sourceWallPoint} from './illustration-style.js';
 import {clipNativePath} from './path-clipping.js';
 
 const mapped=(ops,fn)=>ops.map(o=>({op:o.op,v:o.v.flatMap((_,i,a)=>i%2?[]:fn(a[i],a[i+1]))}));
@@ -28,7 +28,7 @@ export function buildScene(state,_ratPaths,preview=false){
   const poly=(points,fill,stroke='none',sw=0)=>add([{op:'M',v:points[0]},...points.slice(1).map(v=>({op:'L',v})),{op:'Z',v:[]}],fill,stroke,sw);
   const line=(a,b,stroke=STYLE.ink,sw=STYLE.line)=>add([{op:'M',v:a},{op:'L',v:b}],'none',stroke,sw);
   const text=(str,x,y,size=16)=>scene.push({text:str,x,y,size,fill:STYLE.ink,owner,name:str});
-  const reference=(name,fn=referencePoint,scale=REFERENCE_SCALE,modify=p=>p)=>{
+  const reference=(name,fn,scale=REFERENCE_SCALE,modify=p=>p)=>{
     for(const original of REFERENCE[name]){
       const p=modify({...original});
       add(mapped(p.ops,fn),p.fill,p.stroke,p.sw*scale,{opacity:p.opacity});
@@ -37,12 +37,11 @@ export function buildScene(state,_ratPaths,preview=false){
 
   function wall(corners,side,devices=null){
     const straight=devices===null;
-    const xy=(u,v)=>(straight?wallPoint:installationPoint)(corners,u,v),point=(x,y)=>xy(x/6,y/8);
+    const xy=(u,v)=>wallPoint(corners,u,v),point=(x,y)=>xy(x/WALL_UNITS.width,y/WALL_UNITS.height);
     const rect=(x,y,w,h,fill,stroke=STYLE.ink,sw=STYLE.line)=>poly([[x,y],[x+w,y],[x+w,y+h],[x,y+h]].map(p=>point(...p)),fill,stroke,sw);
     const oval=(x,y,rx,ry,fill,stroke=STYLE.ink,sw=STYLE.detail)=>add(mapped(ellipseOps(x,y,rx,ry),point),fill,stroke,sw);
     owner=side+' wall';
-    if(straight)poly(corners,STYLE.wall,STYLE.ink,1.5);
-    else reference(side);
+    poly(corners,STYLE.wall,STYLE.ink,STYLE.line);
     if(state.grid){
       owner='Grid';
       for(let c=1;c<3;c++)line(xy(c/3,0),xy(c/3,1),'#A5A39F',.65);
@@ -58,7 +57,7 @@ export function buildScene(state,_ratPaths,preview=false){
       owner=side+' '+def.en+' column '+(m.col+1)+' row '+(m.row+1);
       const a=point(x+1,y+.5),b=point(x+1,y+1.5),unit=Math.hypot(b[0]-a[0],b[1]-a[1]);
       if(m.type==='house'){
-        const lamp=point(x+1,y+.5);
+        const lamp=point(x+1,y+.43);
         if(ms==='on'&&state.effects){
           if(straight)oval(x+1,y+.5,.45,.38,STYLE.lamp,'none',0);
           else add(ellipseOps(lamp[0]+(side==='left'?1:-1)*unit*.32,lamp[1],unit*.35,unit*.38),STYLE.lamp,'none',0);
@@ -69,8 +68,10 @@ export function buildScene(state,_ratPaths,preview=false){
           oval(x+1,y+.5,.27,.27,ms==='on'?STYLE.lamp:STYLE.charcoal);
           oval(x+.98,y+.36,.18,.07,ms==='on'?'#FCF7E5':STYLE.lens,'none',0);
         }else{
-          const k=unit*.9/10.87,sign=side==='left'?1:-1;
-          reference('house',(sx,sy)=>[lamp[0]+sign*(sx-174.87)*k,lamp[1]+(sy-135.83)*k],k,p=>({...p,
+          // Preserve the old lamp's .74-unit diameter and .46-unit protrusion;
+          // its editable source curves supply the new colors and outlines.
+          const k=unit*.74/10.89,depth=unit*.46/13.26,sign=side==='left'?1:-1;
+          reference('house',(sx,sy)=>[lamp[0]+sign*(sx-174.87)*depth,lamp[1]+(sy-135.83)*k+(sx-174.87)/13.26*unit*.1],k,p=>({...p,
             fill:ms==='on'&&p.fill==='#000000'?STYLE.lamp:ms==='on'&&p.fill==='#97CDDE'?'#FCF7E5':p.fill}));
         }
       }else if(m.type==='speaker'){
@@ -92,8 +93,10 @@ export function buildScene(state,_ratPaths,preview=false){
         if(ms==='extended'){
           if(straight)poly([[x+.62,y+.46],[x+1.38,y+.46],[x+1.56,y+.8],[x+.44,y+.8]].map(p=>point(...p)),STYLE.metal,STYLE.ink,STYLE.detail);
           else{
-            const lever=point(x+1,y+.42),k=unit*.55/7.07,sign=side==='right'?1:-1;
-            reference('lever',(sx,sy)=>[lever[0]+sign*(sx-285.07)*k,lever[1]+(sy-198.57)*k],k);
+            const lever=point(x+1,y+.46),k=unit*.34/7.59,depth=unit*.46/13.98,sign=side==='left'?1:-1;
+            // The template starts at its mounted rear edge. Extrusion points
+            // into the chamber on both walls, never through the outer frame.
+            reference('lever',(sx,sy)=>[lever[0]+sign*(sx-277.58)*depth,lever[1]+(sy-198.05)*k+(sx-277.58)/13.98*unit*.05],k);
           }
         }else rect(x+.6,y+.46,.8,.035,STYLE.metal,STYLE.ink,.6);
       }else if(m.type==='water'||m.type==='food'){
@@ -147,12 +150,12 @@ export function buildScene(state,_ratPaths,preview=false){
       if(devices)devices.push(...scene.splice(start));
     }
     if(state.dimensions){
-      owner='Dimensions';const a=xy(0,1.07),b=xy(1,1.07);line(a,b,STYLE.glassEdge,.8);text('6 units',(a[0]+b[0])/2,(a[1]+b[1])/2+22);
-      const c=xy(-.09,0),d=xy(-.09,1);line(c,d,STYLE.glassEdge,.8);text('8',(c[0]+d[0])/2-14,(c[1]+d[1])/2);
+      owner='Dimensions';const a=xy(0,1.07),b=xy(1,1.07);line(a,b,STYLE.glassEdge,.8);text(WALL_UNITS.width+' units',(a[0]+b[0])/2,(a[1]+b[1])/2+22);
+      const c=xy(-.09,0),d=xy(-.09,1);line(c,d,STYLE.glassEdge,.8);text(String(WALL_UNITS.height),(c[0]+d[0])/2-14,(c[1]+d[1])/2);
     }
   }
   function floor(){
-    owner='Floor';reference('floor');
+    owner='Floor';poly(CHAMBER.floor,STYLE.floor,STYLE.ink,STYLE.line);
     const xy=(u,v)=>wallPoint(CHAMBER.floor,u,v);
     if(state.floor==='bars')for(let i=0;i<18;i++){
       const v=(i+.25)/18,b=v+.021;owner='Metal floor bar '+(i+1);
@@ -164,15 +167,25 @@ export function buildScene(state,_ratPaths,preview=false){
     }
   }
   function perspective(){
-    owner='Box back';reference('back');
-    const devices=[];wall(WALLS.perspective.left,'left',devices);wall(WALLS.perspective.right,'right',devices);
-    owner='Box frame';reference('leftTrim');reference('rightTrim');
-    // The source floor overlays the side-panel extensions at the rear corners.
+    // The original camera looks down onto the roof. Its glass is behind wall
+    // devices, so placing a part on row zero never hides it under a roof mask.
+    owner='Box glass ceiling';poly(CHAMBER.ceiling,STYLE.glass,STYLE.glassEdge,.8);
+    owner='Box back';poly(CHAMBER.back,STYLE.back,STYLE.ink,STYLE.line);
     floor();
+    const devices=[];wall(WALLS.perspective.left,'left',devices);wall(WALLS.perspective.right,'right',devices);
+    owner='Box frame';
+    const [tl,tr,br,bl]=CHAMBER.ceiling,[,,backRight,backLeft]=CHAMBER.back;
+    for(const [a,b]of [[tl,tr],[tl,bl],[br,tr],[bl,br],[bl,backLeft],[br,backRight],[tl,CHAMBER.sill[0]],[tr,CHAMBER.sill[1]]]){
+      line(a,b,STYLE.ink,2.5);line(a,b,STYLE.rim,1);
+    }
+    poly(CHAMBER.sill,STYLE.rim,STYLE.ink,STYLE.line);
     scene.push(...devices);
-    // Roof glass and the front rim overlay internal parts, in chamber depth order.
-    owner='Box glass ceiling';reference('ceiling');
-    owner='Box outer frame';reference('frame');
+    owner='Box outer frame';const {x,y,width,height}=CHAMBER.bounds;
+    const rim=(inset,thickness,fill)=>{
+      const l=x+inset,t=y+inset,r=x+width-inset,b=y+height-inset;
+      for(const pts of [[[l,t],[r,t],[r,t+thickness],[l,t+thickness]],[[l,b-thickness],[r,b-thickness],[r,b],[l,b]],[[l,t],[l+thickness,t],[l+thickness,b],[l,b]],[[r-thickness,t],[r,t],[r,b],[r-thickness,b]]])poly(pts,fill);
+    };
+    rim(0,4,STYLE.ink);rim(1,2,STYLE.rim);
     if(state.rat.visible)scene.push(...ratScene(state.rat));
   }
   function front(){
@@ -187,7 +200,7 @@ export function buildScene(state,_ratPaths,preview=false){
   else if(state.view==='perspective')perspective();
   else{
     perspective();const base=scene.map(s=>project(s,(x,y)=>[x*.68+210,y*.68],.68));
-    scene=[];front();scene=base.concat(scene.map(s=>project(s,(x,y)=>[x*.52+305,y*.4+475],.65)));
+    scene=[];front();scene=base.concat(scene.map(s=>project(s,(x,y)=>[x*.4+384,y*.4+475],.4)));
   }
   return scene;
 }

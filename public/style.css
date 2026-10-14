@@ -24,3 +24,5 @@ button:hover{background:#F0F2ED;border-color:#B2BCB2}
 .floor-icon{border-color:#858780;width:44px}.plain{background:#E0DFDC}
 .bars{background:repeating-linear-gradient(0deg,#E0DFDC 0 4px,#9E9D9B 4px 6px)}
 .acrylic{background:radial-gradient(#A9ADA5 1px,transparent 1.2px),#E0DFDC;background-size:8px 8px}
+/* Keep guidance outside the drawing so the last installation row is visible. */
+.canvas-note{position:relative;bottom:auto;left:auto;transform:none;width:fit-content;max-width:calc(100% - 24px);margin:0 auto 12px;white-space:normal;text-align:center}
