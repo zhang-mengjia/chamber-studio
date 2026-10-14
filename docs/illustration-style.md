@@ -19,13 +19,17 @@ modules span two adjacent rows. Both front diagrams use equal scales in both axe
 the perspective view maps these same units to the complete reference side walls.
 The shared wall coordinates drive drawing, clicking, dragging and exports.
 Combined-view drawing and hit regions also share the same panel transforms.
-The original shell curves are reused. Transparent roof glass is drawn before
-device contours so top-row parts remain legible through the glass. The narrow
-outer rim stays in front; there is no roof-clearance strip in the wall grid.
-Protruding devices are ordered from far to near, independently of installation
-history; opposite walls use opposite depth directions. Uniform scaling retains
-the native lamp and lever silhouettes while fitting each into one row. Both
-protrude toward the chamber interior. Dragging either half of a two-row module to
+The original shell curves are reused. Interior devices and the floor-anchored rat
+share one drawing order from far to near along the observer's sight line, including
+the camera's elevation. Transparent roof glass follows the interior artwork; front
+posts and the outer rim follow the glass. Top-row parts remain visible through the
+glass, without a roof-clearance strip. The preview keeps this same visible order;
+only transparent picking areas are drawn above it. Installation history does not
+affect the order. Uniform scaling retains the native lamp silhouette within one
+row. Lever plates use the chamber's volume projection: the fixed edge follows the
+wall, the horizontal top extends into the chamber, and two connected thickness
+faces complete the solid. Retracted plates stay in their mounting slots; the
+wall-normal front diagrams show a thin edge. Dragging either half of a two-row module to
 the top or bottom edge snaps the full module to a legal anchor. Occupied positions
 are still protected.
 Recessed cups, liquid and pellets share their mounting panel's transform;

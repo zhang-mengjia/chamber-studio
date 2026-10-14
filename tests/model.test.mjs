@@ -83,19 +83,19 @@ test('all rat poses render native curves, share floor anchors and mirror in ever
  assert.equal(buildScene({...initial(),rat:{...initial().rat,visible:false}},[]).filter(p=>p.owner==='Rat').length,0);
 });
 test('static exports contain no editor hit areas or selection outlines',()=>{const s=initial();for(const view of ['perspective','front','combined']){s.view=view;assert.ok(buildScene(s,[]).every(p=>p.fill!=='transparent'&&!p.owner?.includes('selection')));}});
-test('wall devices stay in front of the inner frame and behind the outer frame and rat',()=>{
+test('all device states and the rat stay behind the transparent roof and front frame in previews and exports',()=>{
  for(const view of ['perspective','combined'])for(const type of Object.keys(MODULES))for(const status of Object.keys(STATES[type]))for(const preview of [false,true]){
   const s=initial();s.view=view;s.walls={left:[{type,col:1,row:0,state:status}],right:[{type,col:1,row:0,state:status}]};
   const scene=buildScene(s,[],preview),outer=scene.findIndex(p=>p.owner==='Box outer frame');
-  const inner=scene.slice(0,outer),frameEnd=inner.findLastIndex(p=>p.owner==='Box frame');
+  const inner=scene.slice(0,outer),ceiling=inner.findIndex(p=>p.owner==='Box glass ceiling'),frameStart=inner.findIndex(p=>p.owner==='Box frame');
   const devices=inner.flatMap((p,i)=>/^(left|right) .* column \d+ row \d+$/.test(p.owner)?[i]:[]);
-  assert.ok(frameEnd>=0&&devices.length>0);
-  assert.ok(devices.every(i=>i>frameEnd),`${view}: ${type} ${status} was covered by the inner frame`);
-  for(const side of ['left','right']){
-   const indices=inner.flatMap((p,i)=>p.owner.startsWith(side+' ')&&/ column \d+ row \d+$/.test(p.owner)?[i]:[]);
+  assert.ok(ceiling>=0&&ceiling<frameStart&&devices.length>0);
+  assert.ok(devices.every(i=>i<ceiling),`${view}: ${type} ${status} was painted in front of the roof`);
+  for(const owner of new Set(devices.map(i=>inner[i].owner))){
+   const indices=inner.flatMap((p,i)=>p.owner===owner?[i]:[]);
    assert.equal(indices.at(-1)-indices[0]+1,indices.length,'Each editable device must remain one contiguous group');
   }
-  assert.ok(scene.findIndex(p=>p.owner==='Rat')>outer);
+  assert.ok(scene.findLastIndex(p=>p.owner==='Rat')<ceiling);
   if(view==='perspective')assert.deepEqual(sceneBounds(scene),CHAMBER.bounds);
  }
 });

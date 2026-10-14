@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {initial,validate,place,MODULES,STATES} from '../public/model.js';
-import {CHAMBER,WALLS,WALL_UNITS,wallPoint,wallRegions} from '../public/geometry.js';
+import {CHAMBER,WALLS,WALL_UNITS,wallPoint,chamberPoint,wallRegions} from '../public/geometry.js';
 import {buildScene,sceneBounds,sceneToSVG} from '../public/scene.js';
 import {APERTURES,REFERENCE,referencePoint} from '../public/illustration-style.js';
 import {clipNativePath} from '../public/path-clipping.js';
@@ -74,14 +74,16 @@ test('every row is installable and all device types render at every legal anchor
  }
 });
 
-test('roof and inner frame stay behind all installation rows while the outer rim stays in front',()=>{
- const s=initial();s.rat.visible=false;const scene=buildScene(s,[]);
+test('transparent roof and front posts cover interior objects while every installation row remains visible',()=>{
+ const s=initial();const scene=buildScene(s,[]);
  const floor=scene.findIndex(p=>p.owner==='Floor'),ceiling=scene.findIndex(p=>p.owner==='Box glass ceiling');
  assert.ok(floor<ceiling);
- for(const owner of ['left wall','right wall','Box frame'])assert.ok(scene.findLastIndex(p=>p.owner===owner)<floor);
+ for(const owner of ['left wall','right wall'])assert.ok(scene.findLastIndex(p=>p.owner===owner)<floor);
  const outer=scene.findIndex(p=>p.owner==='Box outer frame');
- const frameEnd=scene.findLastIndex(p=>p.owner==='Box frame');
- assert.ok(scene.filter(p=>p.owner.includes(' column ')).every(p=>scene.indexOf(p)>frameEnd&&scene.indexOf(p)>ceiling&&scene.indexOf(p)<outer));
+ const posts=scene.findIndex(p=>p.owner==='Box frame');
+ assert.ok(ceiling<posts&&posts<outer);
+ assert.ok(scene.filter(p=>p.owner.includes(' column ')||p.owner==='Rat').every(p=>scene.indexOf(p)>floor&&scene.indexOf(p)<ceiling));
+ assert.ok(scene.filter(p=>p.owner==='Box glass ceiling'&&p.fill!=='none').every(p=>p.opacity>0&&p.opacity<1));
 });
 
 test('lamps in consecutive installation rows have a visible gap instead of covering one another',()=>{
@@ -106,13 +108,51 @@ test('protruding devices render far to near regardless of the order they were in
  }
 });
 
-test('native lever plates protrude toward the chamber interior on both walls',()=>{
- for(const side of ['left','right'])for(let col=0;col<3;col++)for(const row of [0,7]){
-  const s=initial();s.rat.visible=false;s.walls={left:[],right:[]};s.walls[side]=[{type:'lever',state:'extended',col,row}];
-  const plate=buildScene(s,[]).filter(p=>p.owner===`${side} Lever column ${col+1} row ${row+1}`);
-  const root=wallPoint(WALLS.perspective[side],(col*2+1)/6,(row+.46)/8);
-  for(const p of plate.flatMap(p=>points(p.ops)))assert.ok(side==='left'?p[0]>=root[0]-1e-8:p[0]<=root[0]+1e-8);
+test('volume projection coincides with the existing installation planes at both side walls',()=>{
+ for(const side of ['left','right'])for(const u of [0,.17,.5,.83,1])for(const v of [0,.125,.5,.875,1]){
+  const onWall=wallPoint(WALLS.perspective[side],u,v);
+  const inVolume=chamberPoint(side==='left'?0:1,side==='left'?1-u:u,1-v);
+  onWall.forEach((value,i)=>near(value,inVolume[i]));
  }
+});
+
+test('lever mounting edges follow the wall and horizontal plate tips extend inward with connected thickness faces',()=>{
+ for(const side of ['left','right'])for(let col=0;col<3;col++)for(const row of [0,7]){
+  const s=initial();s.rat.visible=false;s.effects=false;s.walls={left:[],right:[]};s.walls[side]=[{type:'lever',state:'extended',col,row}];
+  const plate=buildScene(s,[]).filter(p=>p.owner===`${side} Lever column ${col+1} row ${row+1}`);
+  const top=plate.find(p=>p.role==='lever-top').ops.slice(0,4).map(o=>o.v);
+  const ends=(side==='left'?[.4,1.6]:[1.6,.4]).map(u=>wallPoint(WALLS.perspective[side],(col*2+u)/6,(row+.47)/8));
+  ends.forEach((end,i)=>end.forEach((value,j)=>near(value,top[i][j])));
+  for(const [root,tip]of [[top[0],top[3]],[top[1],top[2]]]){
+   assert.ok(side==='left'?tip[0]>root[0]:tip[0]<root[0]);
+   near(tip[1],root[1],'A horizontal plate must not tip upward or downward across its wall-normal span');
+  }
+  assert.notEqual(top[0][1],top[1][1],'The fixed edge must follow the sloping wall depth axis');
+  const tip=plate.find(p=>p.role==='lever-tip').ops.slice(0,4).map(o=>o.v);
+  assert.deepEqual(tip.slice(0,2),[top[2],top[3]]);
+  assert.ok(tip[2][1]>tip[1][1]&&tip[3][1]>tip[0][1]);
+  const end=plate.find(p=>p.role==='lever-near').ops.slice(0,4).map(o=>o.v);
+  assert.deepEqual(end.slice(0,2),[top[0],top[3]]);assert.deepEqual(end[2],tip[2]);
+  s.walls[side][0].state='retracted';
+  const retracted=buildScene(s,[]).filter(p=>p.owner===plate[0].owner);
+  assert.deepEqual(retracted.map(p=>p.role),['lever-slot','lever-retracted']);
+  s.walls[side][0].state='extended';s.view='front';
+  const front=buildScene(s,[]).filter(p=>p.owner===plate[0].owner);
+  assert.deepEqual(front.map(p=>p.role),['lever-slot','lever-edge']);
+  const edge=sceneBounds(front.filter(p=>p.role==='lever-edge'));
+  assert.ok(edge.width/edge.height>10,'The wall-normal diagram should show a thin edge');
+ }
+});
+
+test('near and far devices on opposite walls share one depth order with the floor-anchored animal',()=>{
+ const s=initial();s.effects=false;s.walls={left:[{type:'lever',state:'extended',col:0,row:7}],right:[{type:'lever',state:'extended',col:0,row:7}]};
+ s.rat.y=(CHAMBER.floor[0][1]+CHAMBER.floor[3][1])/2-35*s.rat.scale;
+ const scene=buildScene(s,[]),owners=[...new Set(scene.map(p=>p.owner))];
+ assert.ok(owners.indexOf('right Lever column 1 row 8')<owners.indexOf('Rat'));
+ assert.ok(owners.indexOf('Rat')<owners.indexOf('left Lever column 1 row 8'));
+ s.walls.left=[{type:'house',state:'on',col:1,row:0},{type:'house',state:'on',col:1,row:7}];s.walls.right=[];
+ const ordered=buildScene(s,[]).filter(p=>p.owner.includes('House light column'));
+ assert.equal(ordered[0].owner,'left House light column 2 row 8');assert.equal(ordered.at(-1).owner,'left House light column 2 row 1');
 });
 
 test('native clipping splits a cubic exactly without stroking the new aperture edge',()=>{

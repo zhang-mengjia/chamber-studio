@@ -33,10 +33,11 @@ function previewSVG(){const s=draft||state,box=s.view==='perspective'?{x:260,y:2
   if(selected?.kind==='rat'&&s.rat.visible&&s.view!=='front'){const b=sceneBounds(drawing.filter(p=>p.owner==='Rat'));overlay+=`<rect class="rat-outline" x="${b.x-8}" y="${b.y-8}" width="${b.width+16}" height="${b.height+16}" rx="8"/>`;}
   if(drag?.active&&drag.target){const cells=wallRegions(state,true).filter(r=>r.mode===drag.target.mode&&r.wall===drag.target.wall&&r.col===drag.target.col&&r.row>=drag.target.row&&r.row<drag.target.row+MODULES[drag.module.type].h);for(const r of cells)overlay+=polygon(r,'drop-outline'+(drag.valid?'':' invalid'));}
   overlay+='</g>';
-  // Keep rat above wall hit areas; editor-only outlines never enter export scenes.
+  // Rat picking remains above the transparent interaction areas. Its visible
+  // artwork stays in the shared scene order, behind nearer glass and frame.
   const rats=drawing.filter(p=>p.owner==='Rat');
-  const ratTop=sceneToSVG(rats,true).replace(/^<svg[^>]*>/,'').replace(/<\/svg>$/,'')+rats.filter(p=>p.hitOps).map(p=>`<path class="rat-hit" data-owner="Rat" d="${toD(p.hitOps)}" fill="transparent" tabindex="0" role="button" aria-label="${t('更换大鼠姿势')}"/>`).join('');
-  return sceneToSVG(drawing.filter(p=>p.owner!=='Rat'),true,box).replace('</svg>',overlay+ratTop+'</svg>');
+  const ratHits=rats.filter(p=>p.hitOps).map(p=>`<path class="rat-hit" data-owner="Rat" d="${toD(p.hitOps)}" fill="transparent" tabindex="0" role="button" aria-label="${t('更换大鼠姿势')}"/>`).join('');
+  return sceneToSVG(drawing,true,box).replace('</svg>',overlay+ratHits+'</svg>');
 }
 function renderPreview(){const focus=document.activeElement?.matches?.('#canvas [data-wall]')?{...document.activeElement.dataset}:null;scene=buildScene(state,[]);$('canvas').innerHTML=previewSVG();if(focus)$('canvas').querySelector(`[data-wall="${focus.wall}"][data-col="${focus.col}"][data-row="${focus.row}"][data-mode="${focus.mode}"]`)?.focus({preventScroll:true});$('canvasNote').textContent=state.view==='front'?t('点击任一面板或模块 · 拖动模块调整位置'):t('点击面板、设备、大鼠或地板 · 拖动调整位置');}
 function render(){normalizeSelection();document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));$('name').value=state.name;$('undo').disabled=!history.past.length;$('redo').disabled=!history.future.length;for(const [id,key]of [['gridToggle','grid'],['dimensions','dimensions'],['effects','effects']])$(id).checked=state[key];$('totalCount').textContent=countLabel(state.walls.left.length+state.walls.right.length);renderPreview();if(popup)renderPopup();}

@@ -24,6 +24,27 @@ export function wallPoint(corners,u,v) {
   const [a,b,c,d]=corners;
   return [0,1].map(i=>a[i]*(1-u)*(1-v)+b[i]*u*(1-v)+c[i]*u*v+d[i]*(1-u)*v);
 }
+// Project a point in the chamber volume without changing the reference camera.
+// x: left→right, depth: rear→front, height: floor→ceiling (each 0–1).
+export function chamberPoint(x,depth,height) {
+  const floor=wallPoint(CHAMBER.floor,x,depth);
+  const roof=wallPoint([CHAMBER.ceiling[3],CHAMBER.ceiling[2],CHAMBER.ceiling[1],CHAMBER.ceiling[0]],x,depth);
+  return floor.map((v,i)=>v*(1-height)+roof[i]*height);
+}
+const frontRise=CHAMBER.ceiling[0][1]-CHAMBER.ceiling[3][1];
+const floorRise=CHAMBER.floor[3][1]-CHAMBER.floor[0][1];
+const verticalSpan=((CHAMBER.floor[3][1]-CHAMBER.ceiling[0][1])+(CHAMBER.floor[0][1]-CHAMBER.ceiling[3][1]))/2;
+// The center of the supplied projection gives the observer's elevation relative
+// to chamber depth. Higher parts at the same depth are nearer this observer.
+export const CAMERA_RISE=(frontRise+floorRise)/2/WALL_UNITS.width/(verticalSpan/WALL_UNITS.height);
+export const viewDepth=(depth,height)=>depth*WALL_UNITS.width+height*WALL_UNITS.height*CAMERA_RISE;
+export function moduleDepth(wall,col,row,height=1) {
+  const u=(col*2+1)/WALL_UNITS.width;
+  return viewDepth(wall==='left'?1-u:u,1-(row+height/2)/WALL_UNITS.height);
+}
+export function floorDepth(y) {
+  return Math.max(0,Math.min(1,(y-CHAMBER.floor[0][1])/(CHAMBER.floor[3][1]-CHAMBER.floor[0][1])));
+}
 export function viewPanels(view) {
   return view==='combined'
     ? [{mode:'perspective',scale:.68,map:([x,y])=>[x*.68+210,y*.68]}, {mode:'front',scale:.4,map:([x,y])=>[x*.4+384,y*.4+420]}]

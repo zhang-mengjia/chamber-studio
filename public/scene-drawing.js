@@ -1,6 +1,6 @@
 import {MODULES,defaultState,options,FLAVORS,VOLUMES} from './model.js';
 import {ratScene} from './rat-art.js';
-import {CHAMBER,WALLS,WALL_UNITS,wallPoint,viewPanels} from './geometry.js';
+import {CHAMBER,WALLS,WALL_UNITS,wallPoint,chamberPoint,moduleDepth,floorDepth,viewDepth,viewPanels} from './geometry.js';
 import {STYLE,REFERENCE,APERTURES,REFERENCE_SCALE,referencePoint,sourceWallPoint} from './illustration-style.js';
 import {clipNativePath} from './path-clipping.js';
 
@@ -25,7 +25,7 @@ portBox.w=Math.max(...portPoints.map(p=>p[0]))-portBox.x;portBox.h=Math.max(...p
 export function buildScene(state,_ratPaths,preview=false){
   let scene=[],owner='Box';
   const add=(ops,fill='none',stroke=STYLE.ink,sw=STYLE.line,extra={})=>scene.push({ops,fill,stroke,sw,owner,name:owner+' '+scene.length,...extra});
-  const poly=(points,fill,stroke='none',sw=0)=>add([{op:'M',v:points[0]},...points.slice(1).map(v=>({op:'L',v})),{op:'Z',v:[]}],fill,stroke,sw);
+  const poly=(points,fill,stroke='none',sw=0,extra={})=>add([{op:'M',v:points[0]},...points.slice(1).map(v=>({op:'L',v})),{op:'Z',v:[]}],fill,stroke,sw,extra);
   const line=(a,b,stroke=STYLE.ink,sw=STYLE.line)=>add([{op:'M',v:a},{op:'L',v:b}],'none',stroke,sw);
   const text=(str,x,y,size=16)=>scene.push({text:str,x,y,size,fill:STYLE.ink,owner,name:str});
   const reference=(name,fn=referencePoint,scale=REFERENCE_SCALE,modify=p=>p)=>{
@@ -48,10 +48,7 @@ export function buildScene(state,_ratPaths,preview=false){
       for(let c=1;c<3;c++)line(xy(c/3,0),xy(c/3,1),'#A5A39F',.65);
       for(let r=1;r<8;r++)line(xy(0,r/8),xy(1,r/8),'#A5A39F',.65);
     }
-    // Rendering follows chamber depth, independent of add/move history. The
-    // left wall runs front-to-back; the right wall has the opposite ordering.
-    const modules=straight?state.walls[side]:[...state.walls[side]].sort((a,b)=>(side==='left'?b.col-a.col:a.col-b.col)||a.row-b.row);
-    for(const m of modules){
+    for(const m of state.walls[side]){
       const start=scene.length,def=MODULES[m.type],x=m.col*2,y=m.row;
       const actual=m.state??defaultState(m.type),opt=options(m);
       const ms=actual==='flashing'?(preview&&Date.now()%(1000/opt.hz)>500/opt.hz?'off':'on'):actual;
@@ -90,16 +87,33 @@ export function buildScene(state,_ratPaths,preview=false){
           add(pts.map((v,i)=>({op:i?'L':'M',v})),'none',STYLE.glassEdge,1);
         }
       }else if(m.type==='lever'){
-        if(straight||ms==='retracted')rect(x+.59,y+.45,.82,.075,STYLE.charcoal,STYLE.ink,.7);
+        rect(x+.34,y+.43,1.32,.12,STYLE.charcoal,STYLE.ink,.65);
+        Object.assign(scene.at(-1),{role:'lever-slot',name:owner+' mounting slot'});
         if(ms==='extended'){
-          if(straight)poly([[x+.62,y+.46],[x+1.38,y+.46],[x+1.56,y+.8],[x+.44,y+.8]].map(p=>point(...p)),STYLE.metal,STYLE.ink,STYLE.detail);
-          else{
-            const lever=point(x+1,y+.46),k=unit*.4/7.59,sign=side==='left'?1:-1;
-            // The template starts at its mounted rear edge. Extrusion points
-            // into the chamber on both walls, never through the outer frame.
-            reference('lever',(sx,sy)=>[lever[0]+sign*(sx-277.58)*k,lever[1]+(sy-198.05)*k],k);
+          if(straight){
+            // A wall-normal front diagram sees the plate's edge, not a top face.
+            rect(x+.4,y+.47,1.2,.06,STYLE.metal,STYLE.ink,STYLE.detail);
+            Object.assign(scene.at(-1),{role:'lever-edge',name:owner+' front edge'});
           }
-        }else rect(x+.6,y+.46,.8,.035,STYLE.metal,STYLE.ink,.6);
+          else{
+            // The plate is a horizontal solid attached along the wall's depth
+            // axis. All corners use the existing chamber projection, rather
+            // than mirroring an already-projected source silhouette.
+            const height=1-(y+.47)/WALL_UNITS.height,thickness=.06/WALL_UNITS.height;
+            const face=(s,inset,lower=0)=>{
+              const u=(x+s)/WALL_UNITS.width;
+              return chamberPoint(side==='left'?inset/WALL_UNITS.width:1-inset/WALL_UNITS.width,side==='left'?1-u:u,height-lower);
+            };
+            const near=side==='left'?.4:1.6,far=side==='left'?1.6:.4;
+            const backNear=face(near,0),backFar=face(far,0),tipNear=face(near,.25),tipFar=face(far,.25);
+            poly([tipFar,tipNear,face(near,.25,thickness),face(far,.25,thickness)],'#858480',STYLE.ink,STYLE.detail,{role:'lever-tip',name:owner+' free edge'});
+            poly([backNear,tipNear,face(near,.25,thickness),face(near,0,thickness)],'#777670',STYLE.ink,STYLE.detail,{role:'lever-near',name:owner+' near edge'});
+            poly([backNear,backFar,tipFar,tipNear],STYLE.metal,STYLE.ink,STYLE.detail,{role:'lever-top',name:owner+' top surface'});
+          }
+        }else{
+          rect(x+.45,y+.47,1.1,.045,STYLE.metal,STYLE.ink,.6);
+          Object.assign(scene.at(-1),{role:'lever-retracted',name:owner+' retracted edge'});
+        }
       }else if(m.type==='water'||m.type==='food'){
         const size=.6+.08*VOLUMES.indexOf(opt.volume);
         if(straight){
@@ -148,7 +162,7 @@ export function buildScene(state,_ratPaths,preview=false){
         oval(x+.96,y+.45,.04,.035,STYLE.lens,'none',0);
         oval(x+1.32,y+.35,.045,.035,ms==='recording'?'#BC807A':'#73746E','none',0);
       }
-      if(devices)devices.push(...scene.splice(start));
+      if(devices)devices.push({depth:moduleDepth(side,m.col,m.row,def.h),key:side+' '+m.col+' '+m.row,paths:scene.splice(start)});
     }
     if(state.dimensions){
       owner='Dimensions';const a=xy(0,1.07),b=xy(1,1.07);line(a,b,STYLE.glassEdge,.8);text(WALL_UNITS.width+' units',(a[0]+b[0])/2,(a[1]+b[1])/2+22);
@@ -170,14 +184,15 @@ export function buildScene(state,_ratPaths,preview=false){
   function perspective(){
     owner='Box back';reference('back');
     const devices=[];wall(WALLS.perspective.left,'left',devices);wall(WALLS.perspective.right,'right',devices);
-    owner='Box frame';reference('leftTrim');reference('rightTrim');
     floor();
-    // Preserve the reference's transparent roof. Device contours stay above
-    // the glass tint so the complete top row remains legible through it.
+    if(state.rat.visible)devices.push({depth:viewDepth(floorDepth(state.rat.y+35*state.rat.scale),0),key:'Rat',paths:ratScene(state.rat)});
+    // Both walls and the animal share one order along the observer's sight line.
+    // Glass remains translucent, so occupied upper cells remain visible through it.
+    devices.sort((a,b)=>a.depth-b.depth||a.key.localeCompare(b.key));
+    for(const device of devices)scene.push(...device.paths);
     owner='Box glass ceiling';reference('ceiling');
-    scene.push(...devices);
+    owner='Box frame';reference('leftTrim');reference('rightTrim');
     owner='Box outer frame';reference('frame');
-    if(state.rat.visible)scene.push(...ratScene(state.rat));
   }
   function front(){
     wall(WALLS.front.left,'left');wall(WALLS.front.right,'right');owner='Titles';
